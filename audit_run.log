@@ -97,3 +97,60 @@ sha256        : 708a2fd905256878e6dc697fec366c71d126f06c5bd9119f2ca1cbd2fd2b93af
 
     CONCLUSION: both targets are supported by the observed columns.
     No target definition is invented beyond these columns.
+
+==============================================================================
+PAIMANA AI - STEP 2 : CLEANING DECISION LOG
+source      : PAIMANA_April_2026_Dataset.csv (unchanged, sha256=708a2fd905256878e6dc697fec366c71d126f06c5bd9119f2ca1cbd2fd2b93af)
+output      : data\processed\paimana_clean.csv
+rows in/out : 1981 -> 1981 (rows removed = 0)
+rule        : no row is deleted unless it is an exact duplicate.
+==============================================================================
+
+[D1] Drop exact duplicate rows
+     rows/values affected : 0
+     rationale            : A byte-identical row carries no extra information and would leak between train/test splits. No fuzzy/near-duplicate removal is done.
+
+[D2] Trim whitespace in text columns; map 'NA'/'NULL'/... tokens to NaN
+     rows/values affected : 0
+     rationale            : Placeholders are not real category values; keeping them would create fake levels in one-hot encoding. Literal '-' is kept for id columns and reported instead, since those ids are never model features.
+
+[D3] Coerce the 4 numeric columns to float; physical progress must lie in [0,100], costs must be > 0, expenditure >= 0 (else NaN)
+     rows/values affected : 0
+     rationale            : Physically impossible values are set to missing (median-imputed later inside the model pipeline) instead of deleting the project record.
+
+[D4] Parse MM/YYYY date columns to datetime64 (day=1); unparseable -> NaT
+     rows/values affected : 0
+     rationale            : All date features must be real dates for duration/age arithmetic. Every date in the file parsed successfully (0 invalid values found).
+
+[D5] Normalise 'agency': trim, unwrap parentheses, case/punctuation-insensitive merge of identical names, alias NHAI -> full name
+     rows/values affected : 7
+     rationale            : 188 raw spellings contained variants of the same body (e.g. 'Western Railway [WR] - II' vs 'Western Railway WR - II', '(NHAI)' vs '(National Highways Authority of India [NHAI])'). Merging prevents the same agency being encoded as several unrelated one-hot columns. merged groups (6): Bharat Coking Coal Limited (BCCL) <- ['Bharat Coking Coal Limited (BCCL)', 'Bharat Coking Coal Limited [BCCL]']; Central Public Works Department - CPWD <- ['Central Public Works Department - CPWD', 'Central Public Works Department [CPWD]']; Central Railway <- ['Central Railway', 'CentralRailway']; Ministry of Petroleum & Natural Gas <- ['Ministry of Petroleum & Natural Gas', 'MinistryofPetroleumNaturalGas']; Ministry of Railways <- ['Ministry of Railways', 'Ministry of Railways-']; Western Railway WR - II <- ['Western Railway WR - II', 'Western Railway [WR] - II']
+
+[D6] Trim/collapse whitespace in 'state'; keep 'Multi-States (...)' as-is
+     rows/values affected : 0
+     rationale            : Only whitespace normalisation is safe without an external reference. Multi-state projects are a real category (191 rows) and are kept; rare states are grouped at encoding time (one-hot min_frequency).
+
+[D7] KEEP rows where start_date < approval_date and where revised cost < original cost (flagged, not deleted)
+     rows/values affected : 387
+     rationale            : These are either genuine (early start, de-scoped works) or data-entry errors we cannot prove. Deleting ~50-300 real projects would bias the sample; the values are reported in the audit and remain usable as-is.
+
+FINAL SCHEMA
+    sl_no                            object  (missing=0)
+    project_name                     object  (missing=0)
+    agency                           object  (missing=0)
+    project_code                     object  (missing=0)
+    legacy_ocms_code                 object  (missing=0)
+    pmgid                            object  (missing=0)
+    state                            object  (missing=0)
+    approval_date                    datetime64[ns]  (missing=11)
+    start_date                       datetime64[ns]  (missing=0)
+    target_doc                       datetime64[ns]  (missing=0)
+    revised_doc                      datetime64[ns]  (missing=354)
+    original_cost_crore              float64  (missing=0)
+    revised_cost_crore               float64  (missing=0)
+    cumulative_expenditure_crore     float64  (missing=0)
+    physical_progress_pct            float64  (missing=0)
+    report_month                     object  (missing=0)
+
+Saved cleaned dataset -> C:\Users\ELCOT\Desktop\infrastructure proj\data\processed\paimana_clean.csv
+Original CSV untouched -> C:\Users\ELCOT\Desktop\infrastructure proj\PAIMANA_April_2026_Dataset.csv
