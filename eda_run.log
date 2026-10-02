@@ -1,0 +1,14 @@
+  saved outputs\eda\03_1_cost_distributions.png
+  saved outputs\eda\03_2_cost_threshold_sensitivity.png
+  saved outputs\eda\03_3_expenditure_vs_progress.png
+  saved outputs\eda\03_4_progress_expenditure_gap.png
+Traceback (most recent call last):
+  File "C:\Users\ELCOT\Desktop\infrastructure proj\ml\02_eda.py", line 288, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\ELCOT\Desktop\infrastructure proj\ml\02_eda.py", line 155, in main
+    age = months_between(df["start_date"], REPORT_MONTH)
+  File "C:\Users\ELCOT\Desktop\infrastructure proj\ml\02_eda.py", line 50, in months_between
+    return (b.dt.year * 12 + b.dt.month) - (a.dt.year * 12 + a.dt.month)
+            ^^^^
+AttributeError: 'Timestamp' object has no attribute 'dt'. Did you mean: 'dst'?

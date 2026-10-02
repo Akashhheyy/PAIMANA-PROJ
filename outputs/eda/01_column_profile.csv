@@ -1,0 +1,17 @@
+column,dtype,n_missing_nan,n_placeholder,n_unique,min,max,mean,sample
+sl_no,int64,0,0,1981,1.0,1981.0,991.0,
+project_name,object,0,0,1981,,,,"Construction of New Domestic Terminal Building Building and miscellaneous works including maintenance, operations and AICMC at Kadapa Airport | Construction of New Integrated Terminal Building and associated works including apron to park 3 code E type of aircraft or 6 code C type of aircraft at Vijayawada Airport. | Construction of New  Domestic Terminal Building  at Rajahmundry Airport."
+agency,object,0,0,188,,,,(Airport Authority of India [AAI]) | (Adani Airport Holdings Limited) | (MIS MoCoal Integration Logins)
+project_code,int64,0,0,1981,400005.0,900874.0,620411.6249369006,
+legacy_ocms_code,object,0,797,1125,,,,N04000106 | N04000091 | N04000103
+pmgid,object,0,768,1214,,,,- | 4353 | 9925
+state,object,0,0,107,,,,Andhra Pradesh | Assam | Bihar
+approval_date,object,11,0,213,,,,03/2023 | 06/2020 | 12/2022
+start_date,object,0,0,215,,,,01/2024 | 09/2020 | 08/2023
+target_doc,object,0,0,190,,,,01/2026 | 09/2022 | 08/2025
+revised_doc,object,354,0,96,,,,07/2026 | 10/2026 | 06/2026
+original_cost_crore,float64,0,0,1936,102.4,108000.0,1874.1352902574456,
+revised_cost_crore,float64,0,0,1952,0.1,188000.0,2159.718510853105,
+cumulative_expenditure_crore,float64,0,0,1660,0.0,124623.0,1027.8180161534576,
+physical_progress_pct,float64,0,0,1159,0.0,100.0,60.209621403331646,
+report_month,object,0,0,1,,,,April 2026

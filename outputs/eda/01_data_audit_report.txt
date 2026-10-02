@@ -1,0 +1,99 @@
+==============================================================================
+PAIMANA AI - STEP 1 : DATASET AUDIT REPORT
+generated_utc : 2026-10-02T14:52:47.075499+00:00
+source_file   : PAIMANA_April_2026_Dataset.csv
+sha256        : 708a2fd905256878e6dc697fec366c71d126f06c5bd9119f2ca1cbd2fd2b93af  (original file left untouched)
+==============================================================================
+
+[1] SHAPE
+    rows    : 1981
+    columns : 16
+
+[2] COLUMNS AND DTYPES (pandas-inferred on a default read)
+    - sl_no                            int64
+    - project_name                     object
+    - agency                           object
+    - project_code                     int64
+    - legacy_ocms_code                 object
+    - pmgid                            object
+    - state                            object
+    - approval_date                    object
+    - start_date                       object
+    - target_doc                       object
+    - revised_doc                      object
+    - original_cost_crore              float64
+    - revised_cost_crore               float64
+    - cumulative_expenditure_crore     float64
+    - physical_progress_pct            float64
+    - report_month                     object
+
+[3] MISSING VALUES / PLACEHOLDERS / CARDINALITY
+    column                           dtype         nan  placeholder  nunique
+    sl_no                            int64           0            0     1981
+    project_name                     object          0            0     1981
+    agency                           object          0            0      188
+    project_code                     int64           0            0     1981
+    legacy_ocms_code                 object          0          797     1125
+    pmgid                            object          0          768     1214
+    state                            object          0            0      107
+    approval_date                    object         11            0      213
+    start_date                       object          0            0      215
+    target_doc                       object          0            0      190
+    revised_doc                      object        354            0       96
+    original_cost_crore              float64         0            0     1936
+    revised_cost_crore               float64         0            0     1952
+    cumulative_expenditure_crore     float64         0            0     1660
+    physical_progress_pct            float64         0            0     1159
+    report_month                     object          0            0        1
+
+[4] DUPLICATE RECORDS
+    exact duplicate rows                 : 0
+    duplicate project_code values        : 0
+    duplicate project_name values        : 0
+
+[5] UNIQUE PROJECT IDENTIFIERS
+    sl_no                  unique=  1981  blank/'-'=    0
+    project_code           unique=  1981  blank/'-'=    0
+    legacy_ocms_code       unique=  1125  blank/'-'=  797
+    pmgid                  unique=  1214  blank/'-'=  768
+
+[6] COLUMN GROUPS (used by every later step)
+    numerical columns           : ['sl_no', 'project_code', 'original_cost_crore', 'revised_cost_crore', 'cumulative_expenditure_crore', 'physical_progress_pct']
+    categorical columns         : ['project_name', 'agency', 'state', 'report_month']
+    date columns (MM/YYYY)      : ['approval_date', 'start_date', 'target_doc', 'revised_doc']
+    cost-related columns        : ['original_cost_crore', 'revised_cost_crore']
+    expenditure-related columns : ['cumulative_expenditure_crore']
+    physical-progress columns   : ['physical_progress_pct']
+    completion-date columns     : ['target_doc', 'revised_doc']
+    identifier columns          : ['sl_no', 'project_code', 'legacy_ocms_code', 'pmgid']
+    constant columns            : ['report_month']
+
+[7] DATE PARSING (format %m/%Y)
+    approval_date        invalid=   0  min=1983-03-01 00:00:00  max=2026-04-01 00:00:00
+    start_date           invalid=   0  min=1985-05-01 00:00:00  max=2027-07-01 00:00:00
+    target_doc           invalid=   0  min=2005-03-01 00:00:00  max=2056-12-01 00:00:00
+    revised_doc          invalid=   0  min=2019-09-01 00:00:00  max=2034-09-01 00:00:00
+
+[8] DATA-QUALITY ANOMALIES (kept in the dataset, documented here)
+    revised_cost < original_cost          : 335
+    revised_cost == original_cost         : 1104
+    revised_cost > original_cost          : 542
+    extreme cost reduction (>90%)         : 4
+    cumulative expenditure > original cost: 159
+    physical_progress outside [0,100]     : 0
+    start_date < approval_date            : 52
+    target completion before report month : 1198
+    missing revised_doc (no revision)     : 354
+    revised completion EARLIER than target: 33
+    scheduled slip months > 0             : 1245
+
+[9] TARGET FEASIBILITY CHECK (defines what STEP 5 can defensibly do)
+    cost  escalation candidates (>0)      : 542 / 1981 (27.4%)  -> cost_overrun_label possible: YES
+    cost  escalation > 5%                 : 439
+    cost  escalation > 10%                : 366
+    time  revised_doc > target_doc        : 1245 / 1981 (62.8%)  -> time_overrun_label possible: YES
+    time  revised_doc <= target_doc       : 382
+    time  revised_doc missing (label=0*)  : 354   *documented assumption
+
+    CONCLUSION: both targets are supported by the observed columns.
+    No target definition is invented beyond these columns.
