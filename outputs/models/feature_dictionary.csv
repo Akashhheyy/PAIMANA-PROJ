@@ -1,0 +1,20 @@
+feature,experiment,dtype,source_columns,description
+original_cost_crore,plan_only + current_status,numeric,original_cost_crore,Sanctioned cost at approval (crore INR).
+log1p_original_cost,plan_only + current_status,numeric,original_cost_crore,log1p of sanctioned cost (stabilises skew).
+approval_year,plan_only + current_status,numeric,approval_date,Calendar year of sanction.
+approval_month,plan_only + current_status,numeric,approval_date,Calendar month of sanction.
+planned_horizon_months,plan_only + current_status,numeric,approval_date + target_doc,Planned months from sanction to target completion.
+agency,plan_only + current_status,categorical,agency,Executing agency (normalised in the audit step).
+state,plan_only + current_status,categorical,state,State / multi-state location.
+cumulative_expenditure_crore,current_status only,numeric,cumulative_expenditure_crore,Money spent up to April 2026 (STATUS ONLY).
+log1p_expenditure,current_status only,numeric,cumulative_expenditure_crore,log1p of cumulative expenditure (STATUS ONLY).
+expenditure_ratio,current_status only,numeric,cumulative_expenditure_crore / original_cost_crore,Spend as fraction of sanctioned cost (STATUS ONLY).
+physical_progress_pct,current_status only,numeric,physical_progress_pct,Reported physical progress % (STATUS ONLY).
+progress_expenditure_gap,current_status only,numeric,expenditure_ratio + physical_progress_pct,Spend% minus progress% (STATUS ONLY).
+project_age_months,current_status only,numeric,start_date (vs report month),Months from start to April 2026 (STATUS ONLY).
+planned_duration_months,current_status only,numeric,start_date + target_doc,Planned months start -> target (STATUS ONLY).
+approval_to_start_months,current_status only,numeric,approval_date + start_date,Actual mobilisation lag (STATUS ONLY).
+months_to_target,current_status only,numeric,target_doc (vs report month),Months from April 2026 to target (STATUS ONLY).
+target_passed,current_status only,numeric,target_doc (vs report month),1.0 if target completion already passed (STATUS ONLY).
+schedule_elapsed_pct,current_status only,numeric,start_date + target_doc (vs report month),% of planned window elapsed at April 2026 (STATUS ONLY).
+progress_vs_schedule_pct,current_status only,numeric,schedule_elapsed_pct + physical_progress_pct,Progress% minus elapsed schedule% (STATUS ONLY).

@@ -1,0 +1,148 @@
+C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py:136: UserWarning: Could not find the number of physical cores for the following reason:
+[WinError 2] The system cannot find the file specified
+Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.
+  warnings.warn(
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py", line 257, in _count_physical_cores
+    cpu_info = subprocess.run(
+        "wmic CPU Get NumberOfCores /Format:csv".split(),
+        capture_output=True,
+        text=True,
+    )
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1554, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+==============================================================================
+PAIMANA AI - PHASE 4 : TRAIN + EVALUATE COST & TIME OVERRUN MODELS
+==============================================================================
+
+[STEP 1] VERIFY DATA AND TARGETS
+    found data\processed\paimana_features.csv
+    found outputs\models\feature_dictionary.csv
+    found PAIMANA_April_2026_Dataset.csv
+    found data\processed\paimana_clean.csv
+    features shape: (1981, 32)
+    raw sha256    : 708a2fd905256878e6dc697fec366c71d126f06c5bd9119f2ca1cbd2fd2b93af
+    clean sha256  : a7f330ac31d3939f6006e45e36de516ba381adf15831a154b6a5fb10cc06206b
+    [PASS] original CSV unchanged (pre)
+    [PASS] cleaned CSV unchanged (pre)
+    target column check: both label columns present
+
+    cost_overrun:
+      definition        : 1 if revised_cost_crore > original_cost_crore; 0 if <=; -1 (unknown, excluded) if either cost missing/invalid (NaN or <= 0).
+      eligible rows     : 1981
+      positive (1)      : 542 (27.4%)
+      negative (0)      : 1439
+      unknown (-1, kept): 0  (excluded from training, never treated as 0)
+
+    time_overrun:
+      definition        : 1 if revised_doc > target_doc; 0 if <=; -1 (unknown, excluded) if either date missing/invalid. Unknown is never treated as 0.
+      eligible rows     : 1627
+      positive (1)      : 1245 (76.5%)
+      negative (0)      : 382
+      unknown (-1, kept): 354  (excluded from training, never treated as 0)
+
+[STEP 2] LEAKAGE CHECKS (allowances from leakage_review.md)
+    PASS cost_overrun/plan_only: 7 features, no forbidden or outcome-derived column
+    PASS cost_overrun/current_status: 19 features, no forbidden or outcome-derived column
+    PASS time_overrun/plan_only: 7 features, no forbidden or outcome-derived column
+    PASS time_overrun/current_status: 19 features, no forbidden or outcome-derived column
+    HistGB class_weight supported (sklearn 1.5.2): True
+
+[STEP 3/4] TARGET = cost_overrun
+    split: train=1584 (pos 433/neg 1151)  test=397 (pos 109/neg 288)  stratified=True
+    -- experiment: plan_only (7 features)
+       dummy_baseline           acc=0.725 prec=0.000 rec=0.000 f1=0.000 roc=0.5000 pr=0.2746
+       logistic_regression      acc=0.753 prec=0.537 rec=0.734 f1=0.620 roc=0.8138 pr=0.6102
+       random_forest            acc=0.771 prec=0.574 rec=0.642 f1=0.606 roc=0.8292 pr=0.6109
+       hist_gradient_boosting   acc=0.776 prec=0.585 rec=0.633 f1=0.608 roc=0.8060 pr=0.6097
+    -- experiment: current_status (19 features)
+       dummy_baseline           acc=0.725 prec=0.000 rec=0.000 f1=0.000 roc=0.5000 pr=0.2746
+       logistic_regression      acc=0.798 prec=0.597 rec=0.817 f1=0.690 roc=0.8659 pr=0.7214
+       random_forest            acc=0.798 prec=0.641 rec=0.606 f1=0.623 roc=0.8721 pr=0.7318
+       hist_gradient_boosting   acc=0.798 prec=0.644 rec=0.596 f1=0.619 roc=0.8586 pr=0.7199
+    selected (plan_only / PRIMARY): random_forest
+    selected (current_status)     : random_forest
+    plan_only beats baseline: True (PR-AUC delta +0.3363)
+
+[STEP 3/4] TARGET = time_overrun
+    split: train=1301 (pos 996/neg 305)  test=326 (pos 249/neg 77)  stratified=True
+    -- experiment: plan_only (7 features)
+       dummy_baseline           acc=0.764 prec=0.764 rec=1.000 f1=0.866 roc=0.5000 pr=0.7638
+       logistic_regression      acc=0.837 prec=0.958 rec=0.823 f1=0.886 roc=0.9284 pr=0.9686
+       random_forest            acc=0.856 prec=0.901 rec=0.912 f1=0.906 roc=0.9006 pr=0.9608
+       hist_gradient_boosting   acc=0.893 prec=0.931 rec=0.928 f1=0.930 roc=0.9352 pr=0.9740
+    -- experiment: current_status (19 features)
+       dummy_baseline           acc=0.764 prec=0.764 rec=1.000 f1=0.866 roc=0.5000 pr=0.7638
+       logistic_regression      acc=0.871 prec=0.960 rec=0.867 f1=0.911 roc=0.9389 pr=0.9694
+       random_forest            acc=0.893 prec=0.946 rec=0.912 f1=0.928 roc=0.9581 pr=0.9859
+       hist_gradient_boosting   acc=0.911 prec=0.951 rec=0.932 f1=0.941 roc=0.9599 pr=0.9867
+    selected (plan_only / PRIMARY): hist_gradient_boosting
+    selected (current_status)     : hist_gradient_boosting
+    plan_only beats baseline: True (PR-AUC delta +0.2102)
+
+[STEP 6] VALIDATION
+    [PASS] cost_overrun: pipeline file exists - models\cost_overrun\pipeline.joblib
+    [PASS] cost_overrun: pipeline reloads
+    [PASS] cost_overrun: metadata loads
+    [PASS] cost_overrun: forbidden columns absent from feature matrix - stray=[]
+    [PASS] cost_overrun: prediction shape == (1,) - shape=(1,)
+    [PASS] cost_overrun: predicted class is 0/1 - value=0
+    [PASS] cost_overrun: probability shape == (1,2) - shape=(1, 2)
+    [PASS] cost_overrun: probabilities within [0,1] - min=0.3969 max=0.6031
+    [PASS] cost_overrun: probability rows sum to ~1 - sum=1.000000
+    [PASS] cost_overrun: current_status pipeline reloads
+    [PASS] cost_overrun: comparison CSV readable - rows=8
+    [PASS] cost_overrun: report md readable - bytes=5145
+    [PASS] time_overrun: pipeline file exists - models\time_overrun\pipeline.joblib
+    [PASS] time_overrun: pipeline reloads
+    [PASS] time_overrun: metadata loads
+    [PASS] time_overrun: forbidden columns absent from feature matrix - stray=[]
+    [PASS] time_overrun: prediction shape == (1,) - shape=(1,)
+    [PASS] time_overrun: predicted class is 0/1 - value=1
+    [PASS] time_overrun: probability shape == (1,2) - shape=(1, 2)
+    [PASS] time_overrun: probabilities within [0,1] - min=0.0000 max=1.0000
+    [PASS] time_overrun: probability rows sum to ~1 - sum=1.000000
+    [PASS] time_overrun: current_status pipeline reloads
+    [PASS] time_overrun: comparison CSV readable - rows=8
+    [PASS] time_overrun: report md readable - bytes=5160
+    [PASS] original CSV unchanged (post)
+    [PASS] cleaned CSV unchanged (post)
+
+    validation summary: 28/28 checks passed
+
+==============================================================================
+FINAL SUMMARY (actual held-out test metrics)
+  cost_overrun  (eligible 1981: pos 542 / neg 1439; unknown excluded 0)
+    PRIMARY  plan_only      : random_forest
+             acc=0.771 prec=0.574 rec=0.642 f1=0.606 roc_auc=0.8292 pr_auc=0.6109
+    SEPARATE current_status : random_forest
+             acc=0.798 prec=0.641 rec=0.606 f1=0.623 roc_auc=0.8721 pr_auc=0.7318
+    artifacts: models\cost_overrun\pipeline.joblib, models\cost_overrun\metadata.json, outputs\models\cost_overrun_model_comparison.csv, outputs\models\cost_overrun_report.md
+  time_overrun  (eligible 1627: pos 1245 / neg 382; unknown excluded 354)
+    PRIMARY  plan_only      : hist_gradient_boosting
+             acc=0.893 prec=0.931 rec=0.928 f1=0.930 roc_auc=0.9352 pr_auc=0.9740
+    SEPARATE current_status : hist_gradient_boosting
+             acc=0.911 prec=0.951 rec=0.932 f1=0.941 roc_auc=0.9599 pr_auc=0.9867
+    artifacts: models\time_overrun\pipeline.joblib, models\time_overrun\metadata.json, outputs\models\time_overrun_model_comparison.csv, outputs\models\time_overrun_report.md
+==============================================================================
+STOP: no risk scoring, alerts, frontend, backend, database, dashboard, LLM, RAG or deployment (per instructions).

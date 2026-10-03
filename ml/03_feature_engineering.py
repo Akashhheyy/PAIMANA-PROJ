@@ -233,6 +233,274 @@ def derive_features(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-# END_PART_2
+# --------------------------------------------------------------- reports ----
+def feature_dictionary() -> pd.DataFrame:
+    """Machine-readable dictionary of every modelled feature."""
+    sources = {
+        "original_cost_crore": "original_cost_crore",
+        "log1p_original_cost": "original_cost_crore",
+        "approval_year": "approval_date",
+        "approval_month": "approval_date",
+        "planned_horizon_months": "approval_date + target_doc",
+        "cumulative_expenditure_crore": "cumulative_expenditure_crore",
+        "log1p_expenditure": "cumulative_expenditure_crore",
+        "expenditure_ratio": "cumulative_expenditure_crore / original_cost_crore",
+        "physical_progress_pct": "physical_progress_pct",
+        "progress_expenditure_gap": "expenditure_ratio + physical_progress_pct",
+        "project_age_months": "start_date (vs report month)",
+        "planned_duration_months": "start_date + target_doc",
+        "approval_to_start_months": "approval_date + start_date",
+        "months_to_target": "target_doc (vs report month)",
+        "target_passed": "target_doc (vs report month)",
+        "schedule_elapsed_pct": "start_date + target_doc (vs report month)",
+        "progress_vs_schedule_pct": "schedule_elapsed_pct + physical_progress_pct",
+        "agency": "agency",
+        "state": "state",
+    }
+    descriptions = {
+        "original_cost_crore": "Sanctioned cost at approval (crore INR).",
+        "log1p_original_cost": "log1p of sanctioned cost (stabilises skew).",
+        "approval_year": "Calendar year of sanction.",
+        "approval_month": "Calendar month of sanction.",
+        "planned_horizon_months": "Planned months from sanction to target completion.",
+        "cumulative_expenditure_crore": "Money spent up to April 2026 (STATUS ONLY).",
+        "log1p_expenditure": "log1p of cumulative expenditure (STATUS ONLY).",
+        "expenditure_ratio": "Spend as fraction of sanctioned cost (STATUS ONLY).",
+        "physical_progress_pct": "Reported physical progress % (STATUS ONLY).",
+        "progress_expenditure_gap": "Spend% minus progress% (STATUS ONLY).",
+        "project_age_months": "Months from start to April 2026 (STATUS ONLY).",
+        "planned_duration_months": "Planned months start -> target (STATUS ONLY).",
+        "approval_to_start_months": "Actual mobilisation lag (STATUS ONLY).",
+        "months_to_target": "Months from April 2026 to target (STATUS ONLY).",
+        "target_passed": "1.0 if target completion already passed (STATUS ONLY).",
+        "schedule_elapsed_pct": "% of planned window elapsed at April 2026 "
+                                "(STATUS ONLY).",
+        "progress_vs_schedule_pct": "Progress% minus elapsed schedule% "
+                                    "(STATUS ONLY).",
+        "agency": "Executing agency (normalised in the audit step).",
+        "state": "State / multi-state location.",
+    }
+    rows = []
+    for f in STATUS_FEATURES:
+        rows.append({
+            "feature": f,
+            "experiment": "plan_only + current_status" if f in PLAN_FEATURES
+                          else "current_status only",
+            "dtype": "categorical" if f in CATEGORICAL_FEATURES else "numeric",
+            "source_columns": sources.get(f, ""),
+            "description": descriptions.get(f, ""),
+        })
+    return pd.DataFrame(rows)
+
+
+def write_leakage_review(df: pd.DataFrame, path: Path) -> str:
+    """Write the mandatory leakage / feature-allowance review (Step 4)."""
+    cost_ok = int((df["cost_overrun_label"] != -1).sum())
+    cost_pos = int((df["cost_overrun_label"] == 1).sum())
+    time_ok = int((df["time_overrun_label"] != -1).sum())
+    time_pos = int((df["time_overrun_label"] == 1).sum())
+    future_start = int((_date(df, "start_date") > REPORT_MONTH).sum())
+
+    L: list[str] = []
+    add = L.append
+    add("# PAIMANA AI - LEAKAGE REVIEW (Phase 3, Steps 2-4)")
+    add("")
+    add(f"- generated (UTC): {datetime.now(timezone.utc).isoformat()}")
+    add(f"- source data: data/processed/paimana_clean.csv (raw CSV sha256 "
+        f"`{sha256_of(ROOT / 'PAIMANA_April_2026_Dataset.csv')}`)")
+    add("- snapshot: **April 2026** (single month; report_month is constant)")
+    add("")
+    add("## 1. Target definitions and class counts")
+    add("")
+    add("| Target | Definition | Eligible | Positive | Negative | Unknown (-1, excluded) |")
+    add("|---|---|---|---|---|---|")
+    add(f"| cost_overrun_label | 1 if `revised_cost_crore > original_cost_crore`, "
+        f"else 0; **-1** if either cost is missing/invalid (NaN or <= 0) | "
+        f"{cost_ok} | {cost_pos} | {cost_ok - cost_pos} | {len(df) - cost_ok} |")
+    add(f"| time_overrun_label | 1 if `revised_doc > target_doc`, else 0; **-1** "
+        f"if either date is missing/invalid | {time_ok} | {time_pos} | "
+        f"{time_ok - time_pos} | {len(df) - time_ok} |")
+    add("")
+    add("Unknown labels stay at **-1** and are dropped from supervised training; "
+        "they are NEVER encoded as class 0 (a missing revised_doc must not be "
+        "read as 'no schedule overrun').")
+    add("")
+    add("## 2. Rejected columns (never used as features)")
+    add("")
+    add("| FEATURE | MODEL | LEAKAGE RISK | REASON |")
+    add("|---|---|---|---|")
+    for col, (model, risk, reason) in REJECTED_COLUMNS.items():
+        add(f"| `{col}` | {model} | **{risk}** | {reason} |")
+    add("")
+    add("## 3. Allowed features - COST OVERRUN model")
+    add("")
+    add("`revised_cost_crore` and anything derived from it are used **only** to "
+        "build the label. None of the features below touch it.")
+    add("")
+    add("| FEATURE | EXPERIMENT | LEAKAGE RISK | REASON |")
+    add("|---|---|---|---|")
+    for f in PLAN_FEATURES:
+        add(f"| `{f}` | plan_only + current_status | NONE | Fixed at sanction "
+            "time; contains no post-approval outcome information. |")
+    for f in STATUS_EXTRA_FEATURES:
+        add(f"| `{f}` | current_status only | LOW-MED (status, not leakage) | "
+            "Observed April-2026 state derived from plan/status columns only - "
+            "never from revised_cost_crore, so it does not read the label; but "
+            "it is measured *after* the project started, so it is allowed only "
+            "in the clearly documented current-status experiment. |")
+    add("")
+
+
+    add("## 4. Allowed features - TIME OVERRUN model")
+    add("")
+    add("`revised_doc` and anything derived from it are used **only** to build "
+        "the label; no feature below ever reads it.")
+    add("")
+    add("| FEATURE | EXPERIMENT | LEAKAGE RISK | REASON |")
+    add("|---|---|---|---|")
+    for f in PLAN_FEATURES:
+        add(f"| `{f}` | plan_only + current_status | NONE | Plan-time fact; "
+            "`target_doc` appears only as a planned-duration anchor and is never "
+            "compared with `revised_doc`. |")
+    for f in STATUS_EXTRA_FEATURES:
+        add(f"| `{f}` | current_status only | LOW-MED (status, not leakage) | "
+            "Computed from plan/status columns only (`start_date`, `target_doc`, "
+            "expenditure, progress vs the constant report month); `revised_doc` "
+            "is never read. Deadline-relative fields (`months_to_target`, "
+            "`target_passed`) do associate with revision likelihood, but contain "
+            "no revised-date information - this is documented confounding, not "
+            "leakage. |")
+    add("")
+    add("## 5. Early-warning suitability assessment (important)")
+    add("")
+    add("- The **plan_only** experiment uses only information fixed at sanction "
+        "(cost, approval timing, planned horizon, agency, state). It is the only "
+        "set that may be described as *early prediction*.")
+    add("- The **current_status** experiment adds April-2026 expenditure, "
+        "physical progress, project age and deadline proximity. These fields "
+        "reflect how the project is going *now*.")
+    add("- **Using current-status features does NOT prove early predictive "
+        "capability.** Strong current-status results only show that the model "
+        "can classify present condition from present signals; they cannot show "
+        "the model would have flagged an overrun *before* it happened. Such "
+        "models are reported strictly as *current-status classifiers*.")
+    add(f"- {future_start} rows have `start_date` after the report month, so even "
+        "start-derived fields carry current-state information; that is why all "
+        "start-derived features live in `current_status only`.")
+    add("- This dataset is a **single April 2026 snapshot**. It cannot support "
+        "temporal validation or establish future prediction performance. A later "
+        "phase must obtain historical monthly snapshots and run temporal "
+        "validation before the system may be presented as a validated "
+        "forecasting system.")
+    add("")
+    add("## 6. Structural / split notes")
+    add("")
+    add("- `report_month` is constant -> rejected as a feature.")
+    add("- Identifiers (`sl_no`, `project_code`, `legacy_ocms_code`, `pmgid`) and "
+        "`project_name` rejected -> memorisation risk.")
+    add("- No duplicate rows and no duplicate `project_code` -> one project "
+        "cannot appear in both train and test.")
+    add("- Agencies and states are shared across the split, and only one month "
+        "exists, so any later train/test split measures *within-snapshot* "
+        "generalisation only.")
+    add("")
+    text = "\n".join(L)
+    path.write_text(text, encoding="utf-8")
+    return text
+
+
+# =================================================================== main ====
+def main() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    FEATURES_CSV.parent.mkdir(parents=True, exist_ok=True)
+
+    # ---- STEP 1: inspect the data before using anything --------------------
+    df = pd.read_csv(CLEAN_CSV)
+    print("=" * 78)
+    print("PAIMANA AI - PHASE 3 - STEP 2/3/4 : TARGETS + FEATURES + LEAKAGE")
+    print("=" * 78)
+    print(f"input  : {CLEAN_CSV.relative_to(ROOT)}")
+    print(f"shape  : {df.shape[0]} rows x {df.shape[1]} columns")
+
+    print("\n[STEP 1] REQUIRED COLUMN CHECK (nothing is assumed):")
+    missing = []
+    for c in REQUIRED_COLUMNS:
+        if c in df.columns:
+            print(f"    {c:<32} OK        missing={int(df[c].isna().sum())}")
+        else:
+            missing.append(c)
+            print(f"    {c:<32} MISSING")
+    if missing:
+        raise RuntimeError(f"Required columns absent from {CLEAN_CSV.name}: "
+                           f"{missing}. Fix the cleaning step first.")
+
+    print("\n    dtypes:")
+    for c, dt in df.dtypes.items():
+        print(f"      {c:<32} {dt}")
+    n_dup = int(df.duplicated().sum())
+    n_dup_code = int(df["project_code"].duplicated().sum())
+    print(f"\n    duplicate rows      : {n_dup}")
+    print(f"    duplicate project_code: {n_dup_code}")
+    if "report_month" in df.columns:
+        print(f"    report_month uniques : {list(df['report_month'].unique())}"
+              "  (constant -> rejected as feature)")
+
+    # ---- STEPS 2 & 3: targets ---------------------------------------------
+    df = add_targets(df)
+    print("\n[STEPS 2-3] TARGET DEFINITIONS AND CLASS COUNTS")
+    print("    cost_overrun_label = 1 if revised_cost_crore >  original_cost_crore")
+    print("                         0 if revised_cost_crore <= original_cost_crore")
+    print("                        -1 if either cost missing/invalid  (EXCLUDED)")
+    print("    time_overrun_label = 1 if revised_doc > target_doc")
+    print("                         0 if revised_doc <= target_doc")
+    print("                        -1 if either date missing/invalid  (EXCLUDED)")
+    for name, col in LABELS.items():
+        vc = df[col].value_counts().sort_index()
+        unk = int(vc.get(-1, 0))
+        pos = int(vc.get(1, 0))
+        neg = int(vc.get(0, 0))
+        print(f"\n    {name}: eligible={pos + neg}  positive={pos} "
+              f"({100 * pos / max(pos + neg, 1):.1f}%)  negative={neg}  "
+              f"unknown(excluded)={unk}")
+        assert unk == int((df[col] == -1).sum())
+
+    # ---- STEP 4: features + leakage guard ---------------------------------
+    df = derive_features(df)
+    leaked = set(REJECTED_COLUMNS) & set(STATUS_FEATURES)
+    assert not leaked, f"Leakage guard failed: {sorted(leaked)}"
+    print("\n[STEP 4] LEAKAGE GUARD: rejected columns never appear in the feature "
+          f"lists -> {'PASS' if not leaked else 'FAIL'}")
+    print(f"    plan_only features      ({len(PLAN_FEATURES)}): {PLAN_FEATURES}")
+    print(f"    current_status features ({len(STATUS_FEATURES)}): "
+          "plan_only + {status extras}")
+    print("    NOTE: current_status features document a CURRENT-STATUS "
+          "classifier only;")
+    print("          they are NOT evidence of early predictive capability.")
+
+    n_missing_feat = {f: int(df[f].isna().sum()) for f in STATUS_FEATURES
+                      if df[f].isna().any()}
+    print(f"\n    derived-feature missing values (imputed later in training): "
+          f"{n_missing_feat if n_missing_feat else 'none'}")
+
+    # ---- save artifacts ----------------------------------------------------
+    df.to_csv(FEATURES_CSV, index=False)
+    feature_dictionary().to_csv(OUT_DIR / "feature_dictionary.csv", index=False)
+    write_leakage_review(df, OUT_DIR / "leakage_review.md")
+
+    print("\n[OUTPUTS]")
+    for p in (FEATURES_CSV, OUT_DIR / "feature_dictionary.csv",
+              OUT_DIR / "leakage_review.md"):
+        print(f"    saved {p.relative_to(ROOT)}  ({p.stat().st_size} bytes)")
+    print(f"\n    original CSV sha256 (must be unchanged): "
+          f"{sha256_of(ROOT / 'PAIMANA_April_2026_Dataset.csv')}")
+    print("    original CSV opened read-only; neither CSV was modified here.")
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
 
 

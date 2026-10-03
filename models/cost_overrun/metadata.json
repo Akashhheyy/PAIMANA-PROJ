@@ -1,0 +1,351 @@
+{
+  "target": "cost_overrun",
+  "target_definition": "1 if revised_cost_crore > original_cost_crore; 0 if <=; -1 (unknown, excluded) if either cost missing/invalid (NaN or <= 0).",
+  "unknown_handling": "-1 rows excluded from training/evaluation; never treated as class 0.",
+  "generated_utc": "2026-10-03T12:06:01.320627+00:00",
+  "random_seed": 42,
+  "split": {
+    "test_size": 0.2,
+    "strategy": "stratified train_test_split",
+    "shared_test_rows_for_all_classifiers": true,
+    "n_train": 1584,
+    "n_test": 397
+  },
+  "class_counts": {
+    "eligible": {
+      "n": 1981,
+      "pos": 542,
+      "neg": 1439,
+      "excluded_unknown": 0
+    },
+    "train": {
+      "n": 1584,
+      "pos": 433,
+      "neg": 1151
+    },
+    "test": {
+      "n": 397,
+      "pos": 109,
+      "neg": 288
+    }
+  },
+  "primary_experiment": "plan_only",
+  "feature_sets": {
+    "plan_only": [
+      "original_cost_crore",
+      "log1p_original_cost",
+      "approval_year",
+      "approval_month",
+      "planned_horizon_months",
+      "agency",
+      "state"
+    ],
+    "current_status": [
+      "original_cost_crore",
+      "log1p_original_cost",
+      "approval_year",
+      "approval_month",
+      "planned_horizon_months",
+      "agency",
+      "state",
+      "cumulative_expenditure_crore",
+      "log1p_expenditure",
+      "expenditure_ratio",
+      "physical_progress_pct",
+      "progress_expenditure_gap",
+      "project_age_months",
+      "planned_duration_months",
+      "approval_to_start_months",
+      "months_to_target",
+      "target_passed",
+      "schedule_elapsed_pct",
+      "progress_vs_schedule_pct"
+    ]
+  },
+  "forbidden_columns": [
+    "cost_overrun_label",
+    "legacy_ocms_code",
+    "pmgid",
+    "project_code",
+    "project_name",
+    "report_month",
+    "revised_cost_crore",
+    "revised_doc",
+    "sl_no",
+    "time_overrun_label"
+  ],
+  "selection_criterion": "max PR-AUC on the shared held-out test set; tie-break F1; accuracy never used alone; a selection counts as valid only if PR-AUC beats the dummy baseline by > 0.01",
+  "selected_model_plan_only": {
+    "model": "random_forest",
+    "experiment": "plan_only",
+    "accuracy": 0.7707808564231738,
+    "precision": 0.5737704918032787,
+    "recall": 0.6422018348623854,
+    "f1": 0.6060606060606061,
+    "roc_auc": 0.8291602956167177,
+    "pr_auc": 0.6108881615660064,
+    "confusion_matrix": {
+      "tn": 236,
+      "fp": 52,
+      "fn": 39,
+      "tp": 70
+    },
+    "status": "OK"
+  },
+  "selected_model_current_status": {
+    "model": "random_forest",
+    "experiment": "current_status",
+    "accuracy": 0.7984886649874056,
+    "precision": 0.6407766990291263,
+    "recall": 0.6055045871559633,
+    "f1": 0.6226415094339622,
+    "roc_auc": 0.8721330275229358,
+    "pr_auc": 0.7318008729437392,
+    "confusion_matrix": {
+      "tn": 251,
+      "fp": 37,
+      "fn": 43,
+      "tp": 66
+    },
+    "status": "OK"
+  },
+  "plan_only_beats_baseline": true,
+  "plan_only_pr_auc_delta_vs_baseline": 0.336329,
+  "results": {
+    "plan_only/dummy_baseline": {
+      "target": "cost_overrun",
+      "experiment": "plan_only",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "dummy_baseline",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.72544080604534,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.5,
+      "pr_auc": 0.27455919395465994,
+      "confusion_matrix": {
+        "tn": 288,
+        "fp": 0,
+        "fn": 109,
+        "tp": 0
+      }
+    },
+    "plan_only/logistic_regression": {
+      "target": "cost_overrun",
+      "experiment": "plan_only",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "logistic_regression",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.7531486146095718,
+      "precision": 0.5369127516778524,
+      "recall": 0.7339449541284404,
+      "f1": 0.6201550387596899,
+      "roc_auc": 0.8137742099898063,
+      "pr_auc": 0.6101518798097594,
+      "confusion_matrix": {
+        "tn": 219,
+        "fp": 69,
+        "fn": 29,
+        "tp": 80
+      }
+    },
+    "plan_only/random_forest": {
+      "target": "cost_overrun",
+      "experiment": "plan_only",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "random_forest",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.7707808564231738,
+      "precision": 0.5737704918032787,
+      "recall": 0.6422018348623854,
+      "f1": 0.6060606060606061,
+      "roc_auc": 0.8291602956167177,
+      "pr_auc": 0.6108881615660064,
+      "confusion_matrix": {
+        "tn": 236,
+        "fp": 52,
+        "fn": 39,
+        "tp": 70
+      }
+    },
+    "plan_only/hist_gradient_boosting": {
+      "target": "cost_overrun",
+      "experiment": "plan_only",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "hist_gradient_boosting",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.7758186397984886,
+      "precision": 0.5847457627118644,
+      "recall": 0.6330275229357798,
+      "f1": 0.6079295154185022,
+      "roc_auc": 0.8060015290519877,
+      "pr_auc": 0.6096976897347408,
+      "confusion_matrix": {
+        "tn": 239,
+        "fp": 49,
+        "fn": 40,
+        "tp": 69
+      }
+    },
+    "current_status/dummy_baseline": {
+      "target": "cost_overrun",
+      "experiment": "current_status",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "dummy_baseline",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.72544080604534,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.5,
+      "pr_auc": 0.27455919395465994,
+      "confusion_matrix": {
+        "tn": 288,
+        "fp": 0,
+        "fn": 109,
+        "tp": 0
+      }
+    },
+    "current_status/logistic_regression": {
+      "target": "cost_overrun",
+      "experiment": "current_status",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "logistic_regression",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.7984886649874056,
+      "precision": 0.5973154362416108,
+      "recall": 0.8165137614678899,
+      "f1": 0.689922480620155,
+      "roc_auc": 0.8658893985728847,
+      "pr_auc": 0.7214210089685427,
+      "confusion_matrix": {
+        "tn": 228,
+        "fp": 60,
+        "fn": 20,
+        "tp": 89
+      }
+    },
+    "current_status/random_forest": {
+      "target": "cost_overrun",
+      "experiment": "current_status",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "random_forest",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.7984886649874056,
+      "precision": 0.6407766990291263,
+      "recall": 0.6055045871559633,
+      "f1": 0.6226415094339622,
+      "roc_auc": 0.8721330275229358,
+      "pr_auc": 0.7318008729437392,
+      "confusion_matrix": {
+        "tn": 251,
+        "fp": 37,
+        "fn": 43,
+        "tp": 66
+      }
+    },
+    "current_status/hist_gradient_boosting": {
+      "target": "cost_overrun",
+      "experiment": "current_status",
+      "n_eligible": 1981,
+      "train_n": 1584,
+      "test_n": 397,
+      "train_pos": 433,
+      "train_neg": 1151,
+      "test_pos": 109,
+      "test_neg": 288,
+      "model": "hist_gradient_boosting",
+      "status": "OK",
+      "error": "",
+      "accuracy": 0.7984886649874056,
+      "precision": 0.6435643564356436,
+      "recall": 0.5963302752293578,
+      "f1": 0.6190476190476191,
+      "roc_auc": 0.8585626911314985,
+      "pr_auc": 0.7199364598782265,
+      "confusion_matrix": {
+        "tn": 252,
+        "fp": 36,
+        "fn": 44,
+        "tp": 65
+      }
+    }
+  },
+  "artifacts": {
+    "pipeline_plan_only": "models\\cost_overrun\\pipeline.joblib",
+    "pipeline_current_status": "models\\cost_overrun\\pipeline_current_status.joblib",
+    "comparison_csv": "outputs\\models\\cost_overrun_model_comparison.csv",
+    "report_md": "outputs\\models\\cost_overrun_report.md"
+  },
+  "data": {
+    "features_csv": "data\\processed\\paimana_features.csv",
+    "features_sha256": "57819774001a7d6b2e999c9fdc4a2e6407a4eef1bf631b2a0deb41e2972fe9bc",
+    "raw_csv_sha256_expected": "708a2fd905256878e6dc697fec366c71d126f06c5bd9119f2ca1cbd2fd2b93af",
+    "clean_csv_sha256_expected": "a7f330ac31d3939f6006e45e36de516ba381adf15831a154b6a5fb10cc06206b"
+  },
+  "library_versions": {
+    "python": "3.13.12",
+    "scikit-learn": "1.5.2",
+    "pandas": "2.2.3",
+    "numpy": "2.1.3"
+  },
+  "limitations": [
+    "Single April 2026 snapshot: within-snapshot discrimination only; future prediction performance is NOT established.",
+    "Temporal validation on historical monthly snapshots is required before presenting this as a forecasting system.",
+    "Association, not causation: feature importance does not mean a feature causes overruns.",
+    "Threshold 0.5 fixed; not tuned (test set must not be tuned on).",
+    "current_status experiment is a current-status classifier, not genuine early prediction.",
+    "Labels rely on reported revisions; unreported revisions are not captured (354 time-target rows excluded as unknown)."
+  ],
+  "intended_use": "Research prototype for SIH: offline comparison of two independent binary classifiers (cost/time overrun) on one snapshot. NOT for operational decisions, alerts or publishable forecasts."
+}

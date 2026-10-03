@@ -1,0 +1,67 @@
+==============================================================================
+PAIMANA AI - PHASE 3 - STEP 2/3/4 : TARGETS + FEATURES + LEAKAGE
+==============================================================================
+input  : data\processed\paimana_clean.csv
+shape  : 1981 rows x 16 columns
+
+[STEP 1] REQUIRED COLUMN CHECK (nothing is assumed):
+    original_cost_crore              OK        missing=0
+    revised_cost_crore               OK        missing=0
+    cumulative_expenditure_crore     OK        missing=0
+    physical_progress_pct            OK        missing=0
+    approval_date                    OK        missing=11
+    start_date                       OK        missing=0
+    target_doc                       OK        missing=0
+    revised_doc                      OK        missing=354
+    agency                           OK        missing=0
+    state                            OK        missing=0
+
+    dtypes:
+      sl_no                            int64
+      project_name                     object
+      agency                           object
+      project_code                     int64
+      legacy_ocms_code                 object
+      pmgid                            object
+      state                            object
+      approval_date                    object
+      start_date                       object
+      target_doc                       object
+      revised_doc                      object
+      original_cost_crore              float64
+      revised_cost_crore               float64
+      cumulative_expenditure_crore     float64
+      physical_progress_pct            float64
+      report_month                     object
+
+    duplicate rows      : 0
+    duplicate project_code: 0
+    report_month uniques : ['April 2026']  (constant -> rejected as feature)
+
+[STEPS 2-3] TARGET DEFINITIONS AND CLASS COUNTS
+    cost_overrun_label = 1 if revised_cost_crore >  original_cost_crore
+                         0 if revised_cost_crore <= original_cost_crore
+                        -1 if either cost missing/invalid  (EXCLUDED)
+    time_overrun_label = 1 if revised_doc > target_doc
+                         0 if revised_doc <= target_doc
+                        -1 if either date missing/invalid  (EXCLUDED)
+
+    cost_overrun: eligible=1981  positive=542 (27.4%)  negative=1439  unknown(excluded)=0
+
+    time_overrun: eligible=1627  positive=1245 (76.5%)  negative=382  unknown(excluded)=354
+
+[STEP 4] LEAKAGE GUARD: rejected columns never appear in the feature lists -> PASS
+    plan_only features      (7): ['original_cost_crore', 'log1p_original_cost', 'approval_year', 'approval_month', 'planned_horizon_months', 'agency', 'state']
+    current_status features (19): plan_only + {status extras}
+    NOTE: current_status features document a CURRENT-STATUS classifier only;
+          they are NOT evidence of early predictive capability.
+
+    derived-feature missing values (imputed later in training): {'approval_year': 11, 'approval_month': 11, 'planned_horizon_months': 11, 'approval_to_start_months': 11, 'schedule_elapsed_pct': 2, 'progress_vs_schedule_pct': 2}
+
+[OUTPUTS]
+    saved data\processed\paimana_features.csv  (809521 bytes)
+    saved outputs\models\feature_dictionary.csv  (2365 bytes)
+    saved outputs\models\leakage_review.md  (15673 bytes)
+
+    original CSV sha256 (must be unchanged): 708a2fd905256878e6dc697fec366c71d126f06c5bd9119f2ca1cbd2fd2b93af
+    original CSV opened read-only; neither CSV was modified here.
