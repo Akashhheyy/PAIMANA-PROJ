@@ -1,0 +1,74 @@
+C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py:136: UserWarning: Could not find the number of physical cores for the following reason:
+[WinError 2] The system cannot find the file specified
+Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.
+  warnings.warn(
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py", line 257, in _count_physical_cores
+    cpu_info = subprocess.run(
+        "wmic CPU Get NumberOfCores /Format:csv".split(),
+        capture_output=True,
+        text=True,
+    )
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1554, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+==============================================================================
+PAIMANA AI - PHASE 5 : PROTOTYPE RISK SCORING (April 2026 snapshot)
+==============================================================================
+    sha256 original CSV   : 708a2fd905256878e6dc697f...
+    sha256 cleaned CSV    : a7f330ac31d3939f6006e45e...
+    sha256 features CSV   : 57819774001a7d6b2e999c9f...
+    sha256 cost pipeline  : 8769f00f66df06fd92e624ca...
+    sha256 cost metadata  : 50dddb7635504374914d45e9...
+    sha256 time pipeline  : 450847cf046d8581f4fa3306...
+    sha256 time metadata  : 96fc671bc22e545c53f54333...
+
+[1] loading saved pipelines (joblib.load only - no retraining)
+    cost_overrun: Pipeline -> RandomForestClassifier
+      input schema (7): ['original_cost_crore', 'log1p_original_cost', 'approval_year', 'approval_month', 'planned_horizon_months', 'agency', 'state']
+    time_overrun: Pipeline -> HistGradientBoostingClassifier
+      input schema (7): ['original_cost_crore', 'log1p_original_cost', 'approval_year', 'approval_month', 'planned_horizon_months', 'agency', 'state']
+
+[2] building project risk table
+    rows=1981  columns=17
+    cost prob available : 1981
+    time prob available : 1627 (unknown label rows kept empty: 354)
+    score_status        : {'complete': 1627, 'partial': 354}
+    risk_category       : {'High': 765, 'Low': 641, 'Medium': 575}
+
+[3] writing artifacts
+    saved outputs\risk\project_risk_scores.csv (611966 bytes, 1981 rows)
+    saved outputs\risk\risk_scoring_report.md (4665 bytes)
+
+[4] integrity checks
+    [PASS] original CSV unchanged
+    [PASS] cleaned CSV unchanged
+    [PASS] features CSV unchanged
+    [PASS] cost pipeline unchanged
+    [PASS] cost metadata unchanged
+    [PASS] time pipeline unchanged
+    [PASS] time metadata unchanged
+    [PASS] results CSV re-read OK (1981 rows)
+
+NOTE: prototype risk scoring on one snapshot - not verified future prediction;
+      scores reflect modelled associations, not causation.
+==============================================================================
