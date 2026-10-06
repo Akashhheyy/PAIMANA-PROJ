@@ -1,0 +1,74 @@
+test_high_probability_is_model_estimated_not_causal (test_early_warning.TestMessagesAndActions.test_high_probability_is_model_estimated_not_causal) ... ok
+test_partial_message_flagged (test_early_warning.TestMessagesAndActions.test_partial_message_flagged) ... ok
+test_partial_score_is_labelled_correctly (test_early_warning.TestMessagesAndActions.test_partial_score_is_labelled_correctly) ... ok
+test_recommended_actions (test_early_warning.TestMessagesAndActions.test_recommended_actions) ... ok
+test_output_columns_exist (test_early_warning.TestRealOutput.test_output_columns_exist) ... ok
+test_partial_rows_flagged_and_not_zero (test_early_warning.TestRealOutput.test_partial_rows_flagged_and_not_zero) ... ok
+test_results_are_reproducible (test_early_warning.TestRealOutput.test_results_are_reproducible) ... ok
+test_saved_output_columns_if_present (test_early_warning.TestRealOutput.test_saved_output_columns_if_present) ... ok
+test_warning_priorities_valid (test_early_warning.TestRealOutput.test_warning_priorities_valid) ... ok
+test_thresholds_unchanged_from_phase5 (test_early_warning.TestThresholdConsistency.test_thresholds_unchanged_from_phase5) ... ok
+test_high_combined_generates_combined_warning (test_early_warning.TestWarningTypes.test_high_combined_generates_combined_warning) ... ok
+test_high_cost_generates_cost_warning (test_early_warning.TestWarningTypes.test_high_cost_generates_cost_warning) ... ok
+test_high_time_generates_time_warning (test_early_warning.TestWarningTypes.test_high_time_generates_time_warning) ... ok
+test_medium_score_generates_medium_warning (test_early_warning.TestWarningTypes.test_medium_score_generates_medium_warning) ... ok
+test_missing_score_is_not_low (test_early_warning.TestWarningTypes.test_missing_score_is_not_low) ... ok
+test_missing_time_probability_not_zero (test_early_warning.TestWarningTypes.test_missing_time_probability_not_zero) ... ok
+test_thresholds_exactly_respected (test_early_warning.TestWarningTypes.test_thresholds_exactly_respected) ... ok
+test_both_available_custom_weights (test_risk_scoring.TestCombineProbabilities.test_both_available_custom_weights) ... ok
+test_both_available_weighted_mean (test_risk_scoring.TestCombineProbabilities.test_both_available_weighted_mean) ... ok
+test_both_missing (test_risk_scoring.TestCombineProbabilities.test_both_missing) ... ok
+test_invalid_weights_rejected (test_risk_scoring.TestCombineProbabilities.test_invalid_weights_rejected) ... ok
+test_missing_cost_recorded (test_risk_scoring.TestCombineProbabilities.test_missing_cost_recorded) ... ok
+test_missing_time_is_not_zero_filled (test_risk_scoring.TestCombineProbabilities.test_missing_time_is_not_zero_filled) ... ok
+C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py:136: UserWarning: Could not find the number of physical cores for the following reason:
+[WinError 2] The system cannot find the file specified
+Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.
+  warnings.warn(
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py", line 257, in _count_physical_cores
+    cpu_info = subprocess.run(
+        "wmic CPU Get NumberOfCores /Format:csv".split(),
+        capture_output=True,
+        text=True,
+    )
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1554, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+test_categories_valid (test_risk_scoring.TestRealScoring.test_categories_valid) ... ok
+test_known_time_rows_have_time_probability (test_risk_scoring.TestRealScoring.test_known_time_rows_have_time_probability) ... ok
+test_no_missing_component_hidden_as_zero (test_risk_scoring.TestRealScoring.test_no_missing_component_hidden_as_zero) ... ok
+test_probability_available_flags_match_labels (test_risk_scoring.TestRealScoring.test_probability_available_flags_match_labels) ... ok
+test_probability_ranges (test_risk_scoring.TestRealScoring.test_probability_ranges) ... ok
+test_repeatable_output (test_risk_scoring.TestRealScoring.test_repeatable_output) ... ok
+test_required_output_columns (test_risk_scoring.TestRealScoring.test_required_output_columns) ... ok
+test_schema_has_no_forbidden_inputs (test_risk_scoring.TestRealScoring.test_schema_has_no_forbidden_inputs) ... ok
+test_unknown_time_labels_preserved (test_risk_scoring.TestRealScoring.test_unknown_time_labels_preserved) ... ok
+test_boundaries_scalar (test_risk_scoring.TestRiskThresholds.test_boundaries_scalar) ... ok
+test_custom_thresholds (test_risk_scoring.TestRiskThresholds.test_custom_thresholds) ... ok
+test_nan_unknown (test_risk_scoring.TestRiskThresholds.test_nan_unknown) ... ok
+test_vectorised_matches_scalar (test_risk_scoring.TestRiskThresholds.test_vectorised_matches_scalar) ... ok
+
+----------------------------------------------------------------------
+Ran 36 tests in 2.959s
+
+OK

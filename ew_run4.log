@@ -1,0 +1,48 @@
+==============================================================================
+PAIMANA AI - PHASE 6 : EXPLAINABLE EARLY-WARNING LAYER
+==============================================================================
+    sha256 original CSV        : 708a2fd905256878e6dc697f...
+    sha256 cleaned CSV         : a7f330ac31d3939f6006e45e...
+    sha256 features CSV        : 57819774001a7d6b2e999c9f...
+    sha256 cost model          : 8769f00f66df06fd92e624ca...
+    sha256 time model          : 450847cf046d8581f4fa3306...
+    sha256 phase5 risk output  : 2bc562bedf2f619798ec8f0e...
+    sha256 phase5 risk report  : 47dc69e6eed733a2211fdd46...
+
+[STEP 1] loading Phase 5 risk output
+    shape: (1981, 17)
+    columns: ['sl_no', 'project_code', 'project_name', 'state', 'agency', 'report_month', 'cost_overrun_label', 'time_overrun_label', 'cost_overrun_probability', 'time_overrun_probability', 'cost_probability_available', 'time_probability_available', 'combined_risk_score', 'score_status', 'missing_component', 'risk_category', 'scoring_formula_version']
+    score_status: {'complete': 1627, 'partial': 354}
+    thresholds reused from 06: LOW_MAX=0.35 HIGH_MIN=0.65
+
+[STEP 5] computing model explanations (SHAP TreeExplainer)
+    method : shap_tree_explainer
+    scale  : cost_overrun: class-1 probability scale; time_overrun: raw margin (log-odds) scale
+
+[STEPS 2-4, 6, 8] assembling early-warning results
+    rows=1981 columns=24
+    priority counts : {'HIGH': 1281, 'LOW': 639, 'MEDIUM': 61}
+    COST_WARNING                  : 380
+    TIME_WARNING                  : 1239
+    COMBINED_HIGH_RISK_WARNING    : 749
+    MEDIUM_RISK_WARNING           : 575
+    DATA_COMPLETENESS_WARNING     : 354
+
+[STEP 7/9] writing outputs
+    saved outputs\risk\early_warning_results.csv (2166199 bytes, 1981 rows)
+    saved outputs\risk\early_warning_report.md (4550 bytes)
+
+[STEP 11] data integrity
+    [PASS] original CSV unchanged
+    [PASS] cleaned CSV unchanged
+    [PASS] features CSV unchanged
+    [PASS] cost model unchanged
+    [PASS] time model unchanged
+    [PASS] phase5 risk output unchanged
+    [PASS] phase5 risk report unchanged
+    [PASS] results CSV re-read OK (1981 rows, 24 columns)
+
+NOTE: explainable prototype early-warning and decision-support layer based
+      on model-estimated project risk - single April 2026 snapshot, not a
+      validated future forecasting system.
+==============================================================================
