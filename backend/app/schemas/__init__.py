@@ -1,12 +1,31 @@
-"""Pydantic response/response models for the API.
+"""Pydantic response/request models for the API.
 
-Phase 7.1 only defines the root + health shapes; request schemas for the
-ML endpoints arrive in a later phase.
+Phase 7.1: root + health shapes.
+Phase 7.2: project, prediction, risk and early-warning shapes.
 """
 
 from __future__ import annotations
 
 from pydantic import BaseModel
+
+from .predictions import PredictionResponse, PredictRequest
+from .projects import ProjectDetail, ProjectListResponse, ProjectSummary
+from .risk import ProjectRiskResponse, RiskSummaryResponse
+from .warnings import EarlyWarningItem, EarlyWarningListResponse
+
+__all__ = [
+    "RootResponse",
+    "HealthResponse",
+    "ProjectSummary",
+    "ProjectListResponse",
+    "ProjectDetail",
+    "PredictRequest",
+    "PredictionResponse",
+    "RiskSummaryResponse",
+    "ProjectRiskResponse",
+    "EarlyWarningItem",
+    "EarlyWarningListResponse",
+]
 
 
 class RootResponse(BaseModel):

@@ -1,0 +1,67 @@
+test_health (test_api_phase72.TestBasicEndpoints.test_health) ... ok
+test_root (test_api_phase72.TestBasicEndpoints.test_root) ... ok
+test_filter_by_risk_category (test_api_phase72.TestEarlyWarnings.test_filter_by_risk_category) ... ok
+test_filter_by_warning_type (test_api_phase72.TestEarlyWarnings.test_filter_by_warning_type) ... ok
+test_invalid_filters_return_422 (test_api_phase72.TestEarlyWarnings.test_invalid_filters_return_422) ... ok
+test_list_warnings (test_api_phase72.TestEarlyWarnings.test_list_warnings) ... ok
+test_feature_schema_is_phase4_schema (test_api_phase72.TestModelLoadingAndIntegrity.test_feature_schema_is_phase4_schema) ... ok
+test_model_files_not_modified_by_predictions (test_api_phase72.TestModelLoadingAndIntegrity.test_model_files_not_modified_by_predictions) ... C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py:136: UserWarning: Could not find the number of physical cores for the following reason:
+[WinError 2] The system cannot find the file specified
+Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.
+  warnings.warn(
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py", line 257, in _count_physical_cores
+    cpu_info = subprocess.run(
+        "wmic CPU Get NumberOfCores /Format:csv".split(),
+        capture_output=True,
+        text=True,
+    )
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1554, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+ok
+test_pipelines_cached_singleton (test_api_phase72.TestModelLoadingAndIntegrity.test_pipelines_cached_singleton) ... ok
+test_invalid_values_return_422 (test_api_phase72.TestPredict.test_invalid_values_return_422) ... ok
+test_missing_input_returns_422 (test_api_phase72.TestPredict.test_missing_input_returns_422) ... ok
+test_prediction_is_deterministic (test_api_phase72.TestPredict.test_prediction_is_deterministic) ... ok
+test_valid_prediction (test_api_phase72.TestPredict.test_valid_prediction) ... ok
+test_invalid_project_returns_404 (test_api_phase72.TestProjectEndpoints.test_invalid_project_returns_404) ... ok
+test_project_list (test_api_phase72.TestProjectEndpoints.test_project_list) ... ok
+test_project_list_pagination_total_matches_csv (test_api_phase72.TestProjectEndpoints.test_project_list_pagination_total_matches_csv) ... ok
+test_project_search (test_api_phase72.TestProjectEndpoints.test_project_search) ... ok
+test_valid_project_detail (test_api_phase72.TestProjectEndpoints.test_valid_project_detail) ... ok
+test_invalid_project_risk_returns_404 (test_api_phase72.TestProjectRisk.test_invalid_project_risk_returns_404) ... ok
+test_probabilities_and_thresholds (test_api_phase72.TestProjectRisk.test_probabilities_and_thresholds) ... ok
+test_status_and_schema (test_api_phase72.TestProjectRisk.test_status_and_schema) ... ok
+test_summary_matches_existing_outputs (test_api_phase72.TestRiskSummary.test_summary_matches_existing_outputs) ... ok
+test_cors_origins_restricted (test_endpoints.CorsAndConfigTests.test_cors_origins_restricted) ... ok
+test_cors_preflight_from_react_origin (test_endpoints.CorsAndConfigTests.test_cors_preflight_from_react_origin) ... ok
+test_health_body (test_endpoints.HealthEndpointTests.test_health_body) ... ok
+test_health_status_200 (test_endpoints.HealthEndpointTests.test_health_status_200) ... ok
+test_root_body (test_endpoints.RootEndpointTests.test_root_body) ... ok
+test_root_content_type_json (test_endpoints.RootEndpointTests.test_root_content_type_json) ... ok
+test_root_status_200 (test_endpoints.RootEndpointTests.test_root_status_200) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 9.648s
+
+OK
