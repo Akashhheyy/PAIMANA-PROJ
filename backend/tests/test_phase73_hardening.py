@@ -45,14 +45,27 @@ LEAK_MARKERS = ("Traceback", "site-packages", "\\\\", "File \"", ".py\", line")
 
 
 def assert_clean_error(test: unittest.TestCase, resp) -> None:
-    """Error bodies must be JSON with a detail message and no internals."""
+    """Error bodies must be JSON with a detail message and no internals.
+
+    FastAPI validation errors (422) carry detail as a LIST of error objects;
+    service errors carry it as a plain STRING - both forms are accepted."""
     test.assertIn(resp.status_code, (400, 404, 422, 500, 503))
     body = resp.json()
     test.assertIn("detail", body)
-    test.assertIsInstance(body["detail"], str)
-    for marker in LEAK_MARKERS:
-        test.assertNotIn(marker, body["detail"],
-                         f"error detail leaked {marker!r}: {body['detail']}")
+    detail = body["detail"]
+    if isinstance(detail, str):
+        messages = [detail]
+    else:
+        test.assertIsInstance(detail, list)
+        messages = [str(item.get("msg", item)) for item in detail]
+        test.assertGreater(len(messages), 0)
+        for item in detail:
+            test.assertIn("type", item)
+            test.assertIn("msg", item)
+    for message in messages:
+        for marker in LEAK_MARKERS:
+            test.assertNotIn(marker, message,
+                             f"error detail leaked {marker!r}: {message}")
 
 
 class TestPaginationAndFilterErrors(unittest.TestCase):

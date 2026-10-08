@@ -8,6 +8,24 @@ Risk Monitoring and Early Warning System*.
 > deployment.** The trained models and all ML outputs are untouched by this
 > package.
 
+## Architecture
+
+```
+HTTP request
+    └─ Route        (backend/app/api/*.py)        validation, HTTP mapping
+        └─ Service  (backend/app/services/*.py)   logic, one lru_cache load
+            └─ ML artifact (models/*.joblib, outputs/risk/*.csv, data/...)
+```
+
+- `model_service` — `joblib.load` runs **once** at startup (cached singleton);
+  predictions use the pipeline's own `feature_names_in_` column order.
+  Never retrains, never writes model files.
+- `risk_service` — counts straight from `project_risk_scores.csv` and
+  `early_warning_results.csv`; warning/type names imported from `ml/06`/`ml/07`
+  so thresholds **cannot drift** from the ML layer (0.35 / 0.65, probes ≥ 0.65).
+- `project_service` — reads `paimana_features.csv` once, joins the existing
+  Phase-5 risk category.
+
 ## How to start the backend
 
 Run from the **project root** (the folder containing `backend/`):
@@ -45,11 +63,13 @@ backend/
 │   ├── __init__.py
 │   ├── main.py          # FastAPI app, CORS, / and /health
 │   ├── config.py         # env-driven settings, project-relative paths (no DB config)
-│   ├── api/              # route modules      (empty — later phase)
-│   ├── services/         # business logic     (empty — later phase)
-│   └── schemas/          # pydantic models    (RootResponse, HealthResponse)
+│   ├── api/              # projects, predictions, risk, warnings (Phase 7.2)
+│   ├── services/         # model_service, risk_service, project_service
+│   └── schemas/          # Root/Health + projects, predictions, risk, warnings
 ├── tests/
-│   └── test_endpoints.py # root + health + CORS tests
+│   ├── test_endpoints.py # root + health + CORS tests (Phase 7.1)
+│   ├── test_api_phase72.py  # ML-integration endpoints (Phase 7.2)
+│   └── test_phase73_hardening.py  # error handling, determinism (Phase 7.3)
 ├── requirements.txt
 └── README.md
 ```
@@ -84,7 +104,72 @@ python -m unittest discover -s backend/tests -v
 
 Covers: root, health, CORS, project list/detail/404, risk summary (verified
 against the existing CSVs), early-warning filters, project risk thresholds,
-predict valid/invalid input, and model-caching/no-retrain guards.
+predict valid/invalid input, model-caching/no-retrain guards, Phase-7.3
+error handling (invalid pagination/filters, malformed JSON, missing
+artifacts → clean JSON errors, no internals leaked), and determinism.
+
+## Example API calls
+
+```bash
+# project list + search + pagination
+curl "http://localhost:8000/api/projects?page=1&page_size=2&search=kadapa"
+
+# project detail (404 when the code is unknown)
+curl http://localhost:8000/api/projects/612786
+
+# existing risk score + warning for one project
+curl http://localhost:8000/api/projects/612786/risk
+
+# summary counts from the existing Phase-5/6 outputs
+curl http://localhost:8000/api/risk/summary
+# {"total_projects":1981,"high_risk_count":765,"medium_risk_count":575,
+#  "low_risk_count":641,"partial_incomplete_count":354,"cost_warning_count":380,
+#  "time_warning_count":1239,"combined_high_risk_warning_count":749}
+
+# existing early warnings (filters: risk_category, warning_type)
+curl "http://localhost:8000/api/early-warnings?risk_category=High&warning_type=COST_WARNING"
+```
+
+## Prediction request structure (`POST /api/predict`)
+
+Exactly the Phase-4 plan-only feature schema — every field required except
+`log1p_original_cost`, which is derived server-side with the Phase-3
+`np.log1p` formula when omitted. Missing/invalid fields return **422**
+(nothing is silently defaulted):
+
+```bash
+curl -X POST http://localhost:8000/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"original_cost_crore":500.0,"approval_year":2021,"approval_month":6,
+       "planned_horizon_months":48.0,"agency":"MoRTH","state":"Maharashtra"}'
+```
+
+## Response structure (`PredictionResponse`)
+
+```json
+{
+  "cost_overrun_probability": 0.2218,
+  "time_overrun_probability": 0.9995,
+  "cost_probability_available": true,
+  "time_probability_available": true,
+  "combined_risk_score": 0.6107,
+  "score_status": "complete",
+  "missing_component": "none",
+  "risk_category": "Medium"
+}
+```
+
+All probabilities lie in `[0,1]`; `risk_category` follows the existing ML
+thresholds (Low < 0.35 ≤ Medium < 0.65 ≤ High). Missing model artifacts yield
+a clean 503, unavailable data a clean 500 — both as JSON without stack
+traces or filesystem paths.
+
+## Current limitations / coming in later phases
+
+- **No database** — data is read from the existing generated CSVs (read-only).
+  **Database integration is the next phase.**
+- This backend serves only the **April 2026 PAIMANA snapshot**: scores are
+  model-estimated within-snapshot associations, not verified future forecasts.
 
 ## Current limitations / coming in later phases
 

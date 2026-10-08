@@ -80,6 +80,6 @@ test_unavailable_risk_data_returns_clean_500 (test_phase73_hardening.TestService
 ok
 
 ----------------------------------------------------------------------
-Ran 44 tests in 4.738s
+Ran 44 tests in 4.661s
 
 OK

@@ -1,0 +1,73 @@
+== §12 docs/openapi ==
+  ... GET /docs: 54.5 ms
+  PASS GET /docs 200 html 
+  PASS all 8 endpoints in openapi ['/', '/api/early-warnings', '/api/predict', '/api/projects', '/api/projects/{project_code}', '/api/projects/{project_code}/risk', '/api/risk/summary', '/health']
+  PASS tags group correctly ['early-warnings', 'info', 'predictions', 'projects', 'risk']
+  PASS PredictRequest schema has 7 features 
+  PASS schema PredictionResponse present 
+  PASS schema ProjectSummary present 
+  PASS schema ProjectDetail present 
+  PASS schema RiskSummaryResponse present 
+  PASS schema EarlyWarningItem present 
+  PASS schema HealthResponse present 
+== §2 contract: / and /health ==
+  ... GET /: 7.1 ms
+  PASS GET / 200 
+  PASS GET / fields+types 
+  PASS no-internals / 
+  ... GET /health: 13.6 ms
+  PASS GET /health ok 
+  PASS no-internals /health 
+== §3 project API ==
+  ... GET /api/projects: 7.1 ms
+  PASS projects 200 + schema 
+  PASS page_size honoured 
+  PASS item types 
+  PASS search 6
+  PASS no-internals projects 
+  ... GET /api/projects/612786: 11.5 ms
+  PASS valid detail 612786 
+  PASS invalid project 404 clean 
+  PASS no-internals 404 
+== §4 risk API ==
+  ... GET /api/risk/summary: 21.6 ms
+  PASS summary 200 
+  PASS summary counts == artifacts {'total_projects': 1981, 'high_risk_count': 765, 'medium_risk_count': 575, 'low_risk_count': 641, 'partial_incomplete_count': 354, 'cost_warning_count': 380, 'time_warning_count': 1239, 'combined_high_risk_warning_count': 749}
+  PASS summary types 
+  PASS no-internals summary 
+== §5 early warnings ==
+  ... GET /api/early-warnings: 12.2 ms
+  PASS warnings 200 schema 
+  PASS combined filter 
+  PASS invalid category 422 
+  PASS invalid type 422 
+  PASS no-internals warnings 
+== §6 prediction API (A-E) ==
+  ... A. valid request: 66.8 ms
+  PASS A 200 + schema {"cost_overrun_probability": 0.22184359121734162, "time_overrun_probability": 0.9995186651769238, "cost_probability_available": true, "time_probability_available": true, "combined_risk_score": 0.6106811281971327, "score_status": "complete", "missing_component": "none", "risk_category": "Medium"}
+  PASS probs in [0,1] 
+  PASS category follows 0.35/0.65 {'cost_overrun_probability': 0.22184359121734162, 'time_overrun_probability': 0.9995186651769238, 'cost_probability_available': True, 'time_probability_available': True, 'combined_risk_score': 0.6106811281971327, 'score_status': 'complete', 'missing_component': 'none', 'risk_category': 'Medium'}
+  PASS no-internals predict 
+  PASS B. missing field -> 422 
+  PASS C. invalid numeric -> 422 
+  PASS D. invalid categorical -> 422 
+  PASS E. malformed body -> clean 4xx JSON 
+  PASS no-internals malformed 
+== §8 single project risk ==
+  ... GET /api/projects/706724/risk: 8.4 ms
+  PASS risk 200 + fields {"cost_overrun_probability": 0.7250525282071986, "time_overrun_probability": 0.989448309871887, "combined_risk_score": 0.8572504190395428, "risk_category": "High", "warning_priority": "HIGH"}
+  PASS values sane 
+  PASS partial row: time_p None + time Overrun n/a, not zero 
+  PASS no-internals risk 
+== §7 determinism ==
+  PASS 5 identical requests -> 1 unique response 
+== §10 performance sanity (ms) ==
+  projects-lookup    : 7.1
+  risk-summary       : 21.6
+  first prediction   : 66.8
+  ... repeated prediction: 56.9 ms
+  PASS repeat prediction fast (<2000ms) 
+  PASS lookup fast (<2000ms) 
+  PASS summary fast (<2000ms) 
+
+RESULT: 49 passed, 0 failed
