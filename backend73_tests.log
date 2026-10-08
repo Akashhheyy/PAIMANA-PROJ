@@ -1,0 +1,109 @@
+test_health (test_api_phase72.TestBasicEndpoints.test_health) ... ok
+test_root (test_api_phase72.TestBasicEndpoints.test_root) ... ok
+test_filter_by_risk_category (test_api_phase72.TestEarlyWarnings.test_filter_by_risk_category) ... ok
+test_filter_by_warning_type (test_api_phase72.TestEarlyWarnings.test_filter_by_warning_type) ... ok
+test_invalid_filters_return_422 (test_api_phase72.TestEarlyWarnings.test_invalid_filters_return_422) ... ok
+test_list_warnings (test_api_phase72.TestEarlyWarnings.test_list_warnings) ... ok
+test_feature_schema_is_phase4_schema (test_api_phase72.TestModelLoadingAndIntegrity.test_feature_schema_is_phase4_schema) ... ok
+test_model_files_not_modified_by_predictions (test_api_phase72.TestModelLoadingAndIntegrity.test_model_files_not_modified_by_predictions) ... C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py:136: UserWarning: Could not find the number of physical cores for the following reason:
+[WinError 2] The system cannot find the file specified
+Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.
+  warnings.warn(
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py", line 257, in _count_physical_cores
+    cpu_info = subprocess.run(
+        "wmic CPU Get NumberOfCores /Format:csv".split(),
+        capture_output=True,
+        text=True,
+    )
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1554, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+ok
+test_pipelines_cached_singleton (test_api_phase72.TestModelLoadingAndIntegrity.test_pipelines_cached_singleton) ... ok
+test_invalid_values_return_422 (test_api_phase72.TestPredict.test_invalid_values_return_422) ... ok
+test_missing_input_returns_422 (test_api_phase72.TestPredict.test_missing_input_returns_422) ... ok
+test_prediction_is_deterministic (test_api_phase72.TestPredict.test_prediction_is_deterministic) ... ok
+test_valid_prediction (test_api_phase72.TestPredict.test_valid_prediction) ... ok
+test_invalid_project_returns_404 (test_api_phase72.TestProjectEndpoints.test_invalid_project_returns_404) ... ok
+test_project_list (test_api_phase72.TestProjectEndpoints.test_project_list) ... ok
+test_project_list_pagination_total_matches_csv (test_api_phase72.TestProjectEndpoints.test_project_list_pagination_total_matches_csv) ... ok
+test_project_search (test_api_phase72.TestProjectEndpoints.test_project_search) ... ok
+test_valid_project_detail (test_api_phase72.TestProjectEndpoints.test_valid_project_detail) ... ok
+test_invalid_project_risk_returns_404 (test_api_phase72.TestProjectRisk.test_invalid_project_risk_returns_404) ... ok
+test_probabilities_and_thresholds (test_api_phase72.TestProjectRisk.test_probabilities_and_thresholds) ... ok
+test_status_and_schema (test_api_phase72.TestProjectRisk.test_status_and_schema) ... ok
+test_summary_matches_existing_outputs (test_api_phase72.TestRiskSummary.test_summary_matches_existing_outputs) ... ok
+test_cors_origins_restricted (test_endpoints.CorsAndConfigTests.test_cors_origins_restricted) ... ok
+test_cors_preflight_from_react_origin (test_endpoints.CorsAndConfigTests.test_cors_preflight_from_react_origin) ... ok
+test_health_body (test_endpoints.HealthEndpointTests.test_health_body) ... ok
+test_health_status_200 (test_endpoints.HealthEndpointTests.test_health_status_200) ... ok
+test_root_body (test_endpoints.RootEndpointTests.test_root_body) ... ok
+test_root_content_type_json (test_endpoints.RootEndpointTests.test_root_content_type_json) ... ok
+test_root_status_200 (test_endpoints.RootEndpointTests.test_root_status_200) ... ok
+test_repeated_predictions_are_byte_identical (test_phase73_hardening.TestDeterminism.test_repeated_predictions_are_byte_identical) ... ok
+test_invalid_categorical_values (test_phase73_hardening.TestMalformedAndInvalidPredict.test_invalid_categorical_values) ... ok
+test_malformed_json_body (test_phase73_hardening.TestMalformedAndInvalidPredict.test_malformed_json_body) ... ok
+test_no_silent_defaults_for_missing_fields (test_phase73_hardening.TestMalformedAndInvalidPredict.test_no_silent_defaults_for_missing_fields) ... FAIL
+test_both_models_load_with_expected_types (test_phase73_hardening.TestModelLoading.test_both_models_load_with_expected_types) ... ok
+test_loaded_once_and_reused (test_phase73_hardening.TestModelLoading.test_loaded_once_and_reused) ... ok
+test_threshold_guard (test_phase73_hardening.TestModelLoading.test_threshold_guard) ... ok
+test_error_responses_have_no_internals (test_phase73_hardening.TestNoLeakageOfInternals.test_error_responses_have_no_internals) ... ok
+test_success_responses_have_no_paths (test_phase73_hardening.TestNoLeakageOfInternals.test_success_responses_have_no_paths) ... ok
+test_invalid_filters_clean_422 (test_phase73_hardening.TestPaginationAndFilterErrors.test_invalid_filters_clean_422) ... ok
+test_invalid_pagination (test_phase73_hardening.TestPaginationAndFilterErrors.test_invalid_pagination) ... FAIL
+test_valid_page_size_bounds (test_phase73_hardening.TestPaginationAndFilterErrors.test_valid_page_size_bounds) ... ok
+test_missing_model_artifact_returns_clean_503 (test_phase73_hardening.TestServiceFailures.test_missing_model_artifact_returns_clean_503) ... model service error: trained model artifacts could not be loaded
+ok
+test_unavailable_project_data_returns_clean_500 (test_phase73_hardening.TestServiceFailures.test_unavailable_project_data_returns_clean_500) ... project dataset error: project dataset is unavailable
+ok
+test_unavailable_risk_data_returns_clean_500 (test_phase73_hardening.TestServiceFailures.test_unavailable_risk_data_returns_clean_500) ... risk output error: Phase-5 risk output is unavailable
+ok
+
+======================================================================
+FAIL: test_no_silent_defaults_for_missing_fields (test_phase73_hardening.TestMalformedAndInvalidPredict.test_no_silent_defaults_for_missing_fields)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ELCOT\Desktop\infrastructure proj\backend\tests\test_phase73_hardening.py", line 120, in test_no_silent_defaults_for_missing_fields
+    assert_clean_error(self, resp)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\ELCOT\Desktop\infrastructure proj\backend\tests\test_phase73_hardening.py", line 52, in assert_clean_error
+    test.assertIsInstance(body["detail"], str)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [{'type': 'missing', 'loc': ['body', 'original_cost_crore'], 'msg': 'Field required', 'input': {'approval_year': 2021, 'approval_month': 6, 'planned_horizon_months': 48.0, 'agency': 'MoRTH', 'state': 'Maharashtra'}}] is not an instance of <class 'str'>
+
+======================================================================
+FAIL: test_invalid_pagination (test_phase73_hardening.TestPaginationAndFilterErrors.test_invalid_pagination)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\ELCOT\Desktop\infrastructure proj\backend\tests\test_phase73_hardening.py", line 66, in test_invalid_pagination
+    assert_clean_error(self, resp)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\ELCOT\Desktop\infrastructure proj\backend\tests\test_phase73_hardening.py", line 52, in assert_clean_error
+    test.assertIsInstance(body["detail"], str)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [{'type': 'greater_than_equal', 'loc': ['query', 'page'], 'msg': 'Input should be greater than or equal to 1', 'input': '0', 'ctx': {'ge': 1}}] is not an instance of <class 'str'>
+
+----------------------------------------------------------------------
+Ran 44 tests in 3.843s
+
+FAILED (failures=2)
