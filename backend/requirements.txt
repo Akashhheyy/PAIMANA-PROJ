@@ -1,0 +1,10 @@
+# PAIMANA AI backend - Phase 7.1 (backend foundation only)
+# Versions verified against the current environment (Python 3.13.12).
+fastapi==0.115.6
+uvicorn==0.34.0
+# test client dependency (backend/tests)
+httpx==0.28.1
+# pulled in by fastapi; pinned for reproducibility
+pydantic>=2.0
+# uvicorn --reload file watcher (installed separately if absent)
+watchfiles>=1.0

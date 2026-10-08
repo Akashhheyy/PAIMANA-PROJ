@@ -1,0 +1,12 @@
+test_cors_origins_restricted (test_endpoints.CorsAndConfigTests.test_cors_origins_restricted) ... ok
+test_cors_preflight_from_react_origin (test_endpoints.CorsAndConfigTests.test_cors_preflight_from_react_origin) ... ok
+test_health_body (test_endpoints.HealthEndpointTests.test_health_body) ... ok
+test_health_status_200 (test_endpoints.HealthEndpointTests.test_health_status_200) ... ok
+test_root_body (test_endpoints.RootEndpointTests.test_root_body) ... ok
+test_root_content_type_json (test_endpoints.RootEndpointTests.test_root_content_type_json) ... ok
+test_root_status_200 (test_endpoints.RootEndpointTests.test_root_status_200) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.228s
+
+OK
