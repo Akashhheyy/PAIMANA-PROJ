@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from .dashboard import ProgressBin, ProgressDistributionResponse
 from .predictions import PredictionResponse, PredictRequest
 from .projects import ProjectDetail, ProjectListResponse, ProjectSummary
 from .risk import ProjectRiskResponse, RiskSummaryResponse
@@ -25,6 +26,8 @@ __all__ = [
     "ProjectRiskResponse",
     "EarlyWarningItem",
     "EarlyWarningListResponse",
+    "ProgressBin",
+    "ProgressDistributionResponse",
 ]
 
 

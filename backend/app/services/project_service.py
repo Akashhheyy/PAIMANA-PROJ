@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+import numpy as np
 import pandas as pd
 
 from ..config import get_settings
@@ -106,3 +107,60 @@ def get_project(project_code: str) -> dict | None:
 
 def project_exists(project_code: str) -> bool:
     return get_project(project_code) is not None
+
+
+# ---------------------------------------------------------------------------
+# Phase 7.4 - Graph 1 aggregation (read-only, cached frame, no ML imports)
+# ---------------------------------------------------------------------------
+PROGRESS_BIN_EDGES = list(range(0, 101, 10))
+PROGRESS_BIN_LABELS = [f"{PROGRESS_BIN_EDGES[i]}-{PROGRESS_BIN_EDGES[i + 1]}"
+                       for i in range(len(PROGRESS_BIN_EDGES) - 1)]
+SNAPSHOT_LABEL = "April 2026"
+
+
+def progress_distribution(agency: str | None = None,
+                          state: str | None = None,
+                          frame: pd.DataFrame | None = None) -> dict:
+    """Physical-progress histogram for the dashboard (Graph 1).
+
+    Bins: [0,10], (10,20], ..., (90,100] - the last bin INCLUDES exactly
+    100% (verified pitfall: 97 projects sit at 100.0). Every eligible
+    project belongs to exactly one bin; `sum(bins) == projects_included`
+    is asserted. Missing progress is excluded from bins and COUNTED, never
+    zero-filled. Optional `frame` exists purely for unit-testing boundaries.
+    """
+    df = projects_frame() if frame is None else frame
+    if agency:
+        df = df[df["agency"] == agency.strip()]
+    if state:
+        df = df[df["state"] == state.strip()]
+
+    total = int(len(df))
+    raw = (df["physical_progress_pct"] if "physical_progress_pct" in df.columns
+           else pd.Series(np.nan, index=df.index))
+    progress = pd.to_numeric(raw, errors="coerce")
+    included = progress[progress.notna()]
+    missing = total - int(len(included))
+
+    counts = (pd.cut(included, bins=PROGRESS_BIN_EDGES, right=True,
+                     include_lowest=True, labels=PROGRESS_BIN_LABELS)
+              .value_counts()
+              .reindex(PROGRESS_BIN_LABELS, fill_value=0))
+    bins = [{"label": lab, "count": int(counts[lab])}
+            for lab in PROGRESS_BIN_LABELS]
+    assert sum(b["count"] for b in bins) == len(included), \
+        "every eligible project must belong to exactly one bin"
+
+    return {
+        "snapshot_label": SNAPSHOT_LABEL,
+        "total_projects": total,
+        "projects_included": int(len(included)),
+        "projects_missing_progress": missing,
+        "bins": bins,
+        "mean_progress": (round(float(included.mean()), 2)
+                          if len(included) else None),
+        "median_progress": (round(float(included.median()), 2)
+                            if len(included) else None),
+        "agency_filter": agency,
+        "state_filter": state,
+    }

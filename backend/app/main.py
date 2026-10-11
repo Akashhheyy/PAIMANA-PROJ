@@ -21,7 +21,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import predictions, projects, risk, warnings
+from .api import dashboard, predictions, projects, risk, warnings
 from .config import get_settings
 from .schemas import HealthResponse, RootResponse
 
@@ -37,6 +37,7 @@ ALL_ENDPOINTS = [
     "/api/risk/summary",
     "/api/early-warnings",
     "/api/predict",
+    "/api/dashboard/progress-distribution",
 ]
 
 
@@ -120,3 +121,7 @@ app.include_router(predictions.router, prefix="/api/predict",
 app.include_router(risk.router, prefix="/api/risk", tags=["risk"])
 app.include_router(warnings.router, prefix="/api/early-warnings",
                    tags=["early-warnings"])
+
+# --- Phase 7.4: dashboard graph data (read-only aggregation) ---------------
+app.include_router(dashboard.router, prefix="/api/dashboard",
+                   tags=["dashboard"])
