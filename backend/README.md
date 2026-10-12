@@ -51,9 +51,47 @@ Optional environment variables (all have safe defaults — see `app/config.py`):
 | `PAIMANA_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` |
 | `PAIMANA_MODELS_DIR` | `<project root>/models` (relative) |
 | `PAIMANA_RISK_DIR` | `<project root>/outputs/risk` (relative) |
+| `PAIMANA_DATABASE_URL` | `sqlite:///<project root>/data/paimana.db` (relative; set to a PostgreSQL URL to port) |
 
 Dependencies: `backend/requirements.txt` (`pip install -r backend/requirements.txt`
-— already satisfied in the current environment).
+— fastapi, uvicorn, httpx, pydantic, watchfiles, **sqlalchemy**).
+
+## Database (Phase 8)
+
+Local SQLite + SQLAlchemy, read by the API through dependency-injected
+sessions (`get_db`). **No database work happens at application startup.**
+
+```powershell
+# 1. (optional) point elsewhere; default is data/paimana.db (git-ignored)
+$env:PAIMANA_DATABASE_URL = "sqlite:///C:/path/to/paimana.db"
+
+# 2. create/upgrade the schema (safe, never destructive)
+python -m backend.app.db.init_db
+
+# 3. import the April 2026 snapshot (idempotent - reruns update, never duplicate)
+python -m backend.app.db.import_snapshot
+
+# 4. inspect what is stored
+python -m backend.app.db.inspect_db
+```
+
+Tables: `projects` (1 row per project; `project_code` unique), `risk_results`
+(`(project_code, report_month)` unique; `time_overrun_probability` NULL where
+the time label was unknown — never 0), `early_warnings` (same uniqueness;
+identity fields live in `projects`, not duplicated), `import_snapshots`
+(provenance: snapshot id `2026-04`, source files, counts), `schema_version`
+(applied migrations; rerunning init is a no-op).
+
+**Future monthly snapshots:** add a new migration only if the schema must
+change, then run a snapshot import for the new `report_month` — composite
+uniqueness keeps each period's rows separate, and old rows are never deleted.
+
+Database file: `data/paimana.db` (~3 MB, **git-ignored** — each environment
+builds its own via the commands above).
+
+Current limitations: SQLite single-writer semantics under heavy concurrency;
+no auth/rate limiting; the API serves the April 2026 snapshot associations
+(prototype, not verified future forecasts).
 
 ## Backend structure
 
@@ -62,14 +100,18 @@ backend/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py          # FastAPI app, CORS, / and /health
-│   ├── config.py         # env-driven settings, project-relative paths (no DB config)
-│   ├── api/              # projects, predictions, risk, warnings (Phase 7.2)
+│   ├── config.py         # env-driven settings, project-relative paths (+DB URL)
+│   ├── db/               # Phase 8: session, models, migrations, init_db,
+│   │                     # import_snapshot, inspect_db
+│   ├── api/              # projects, predictions, risk, warnings, dashboard
 │   ├── services/         # model_service, risk_service, project_service
 │   └── schemas/          # Root/Health + projects, predictions, risk, warnings
 ├── tests/
 │   ├── test_endpoints.py # root + health + CORS tests (Phase 7.1)
 │   ├── test_api_phase72.py  # ML-integration endpoints (Phase 7.2)
-│   └── test_phase73_hardening.py  # error handling, determinism (Phase 7.3)
+│   ├── test_phase73_hardening.py  # error handling, determinism (Phase 7.3)
+│   ├── test_dashboard_graphs.py  # progress distribution (Phase 7.4)
+│   └── test_database.py  # DB layer + DB-backed API tests (Phase 8)
 ├── requirements.txt
 └── README.md
 ```

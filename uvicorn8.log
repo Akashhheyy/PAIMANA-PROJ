@@ -1,0 +1,5 @@
+INFO:     127.0.0.1:55592 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55592 - "GET /api/risk/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55592 - "GET /api/projects/612183/risk HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55592 - "GET /api/dashboard/progress-distribution?state=Assam HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55592 - "POST /api/predict HTTP/1.1" 200 OK

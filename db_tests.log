@@ -1,0 +1,86 @@
+test_dashboard_distribution_matches_source (backend.tests.test_database.TestApiOnDatabase.test_dashboard_distribution_matches_source) ... ok
+test_detail_and_404 (backend.tests.test_database.TestApiOnDatabase.test_detail_and_404) ... ok
+test_early_warning_filtering (backend.tests.test_database.TestApiOnDatabase.test_early_warning_filtering) ... ok
+test_predict_still_works_from_trained_models (backend.tests.test_database.TestApiOnDatabase.test_predict_still_works_from_trained_models) ... C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py:136: UserWarning: Could not find the number of physical cores for the following reason:
+[WinError 2] The system cannot find the file specified
+Returning the number of logical cores instead. You can silence this warning by setting LOKY_MAX_CPU_COUNT to the number of cores you want to use.
+  warnings.warn(
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\site-packages\joblib\externals\loky\backend\context.py", line 257, in _count_physical_cores
+    cpu_info = subprocess.run(
+        "wmic CPU Get NumberOfCores /Format:csv".split(),
+        capture_output=True,
+        text=True,
+    )
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 554, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1554, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+ok
+test_project_list_matches_source_count (backend.tests.test_database.TestApiOnDatabase.test_project_list_matches_source_count) ... ok
+test_project_search_and_pagination (backend.tests.test_database.TestApiOnDatabase.test_project_search_and_pagination) ... ok
+test_risk_lookup_partial_null (backend.tests.test_database.TestApiOnDatabase.test_risk_lookup_partial_null) ... ok
+test_risk_summary_matches_artifacts (backend.tests.test_database.TestApiOnDatabase.test_risk_summary_matches_artifacts) ... ok
+test_sql_bins_and_null_progress (backend.tests.test_database.TestDbBoundaryAndMissing.test_sql_bins_and_null_progress) ... ok
+test_failed_import_rolls_back (backend.tests.test_database.TestImport.test_failed_import_rolls_back)
+Mid-write failure -> transaction rolled back, counts intact. ... ok
+test_foreign_key_integrity (backend.tests.test_database.TestImport.test_foreign_key_integrity) ... ok
+test_import_counts_and_snapshot (backend.tests.test_database.TestImport.test_import_counts_and_snapshot) ... ok
+test_null_time_probability_preserved (backend.tests.test_database.TestImport.test_null_time_probability_preserved) ... ok
+test_repeated_import_is_idempotent (backend.tests.test_database.TestImport.test_repeated_import_is_idempotent) ... ok
+test_validation_rejects_mismatched_sources (backend.tests.test_database.TestImport.test_validation_rejects_mismatched_sources) ... ok
+test_schema_creation_and_migration_idempotency (backend.tests.test_database.TestSchemaAndMigrations.test_schema_creation_and_migration_idempotency) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 12.046s
+
+OK
+Traceback (most recent call last):
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\shutil.py", line 625, in _rmtree_unsafe
+    os.unlink(fullname)
+    ~~~~~~~~~^^^^^^^^^^
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\ELCOT\\AppData\\Local\\Temp\\paimana_test_0x9ya9lc\\test.db'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\weakref.py", line 666, in _exitfunc
+    f()
+    ~^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\weakref.py", line 590, in __call__
+    return info.func(*info.args, **(info.kwargs or {}))
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\tempfile.py", line 940, in _cleanup
+    cls._rmtree(name, ignore_errors=ignore_errors)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\tempfile.py", line 935, in _rmtree
+    _shutil.rmtree(name, onexc=onexc)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\shutil.py", line 790, in rmtree
+    return _rmtree_unsafe(path, onexc)
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\shutil.py", line 629, in _rmtree_unsafe
+    onexc(os.unlink, fullname, err)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ELCOT\AppData\Local\Programs\Python\Python313\Lib\tempfile.py", line 910, in onexc
+    _os.unlink(path)
+    ~~~~~~~~~~^^^^^^
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\ELCOT\\AppData\\Local\\Temp\\paimana_test_0x9ya9lc\\test.db'
+<sys>:0: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x00000232D181A2F0>
