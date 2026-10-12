@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 
+from ..db.session import get_db
 from ..schemas import (ProjectDetail, ProjectListResponse, ProjectRiskResponse,
                        ProjectSummary)
 from ..services import project_service, risk_service
@@ -20,10 +22,12 @@ def list_projects(
     page_size: int = Query(20, ge=1, le=100, description="items per page"),
     search: str | None = Query(None, min_length=1, max_length=200,
                                 description="match name/state/agency/code"),
+    db: Session = Depends(get_db),
 ):
-    """Paginated project list from the existing generated project data."""
+    """Paginated project list from the database (Phase 8)."""
     try:
-        items, total = project_service.list_projects(page, page_size, search)
+        items, total = project_service.list_projects(db, page, page_size,
+                                                     search)
     except project_service.ProjectServiceError as exc:
         logger.error("project dataset error: %s", exc)
         raise HTTPException(
@@ -33,10 +37,10 @@ def list_projects(
 
 
 @router.get("/{project_code}/risk", response_model=ProjectRiskResponse)
-def project_risk(project_code: str):
-    """Existing Phase-5 risk score + Phase-6 warning for one project."""
+def project_risk(project_code: str, db: Session = Depends(get_db)):
+    """Persisted Phase-5 risk score + Phase-6 warning for one project."""
     try:
-        data = risk_service.get_project_risk(_as_code(project_code))
+        data = risk_service.get_project_risk(db, _as_code(project_code))
     except risk_service.RiskServiceError as exc:
         logger.error("risk output error: %s", exc)
         raise HTTPException(
@@ -47,10 +51,10 @@ def project_risk(project_code: str):
 
 
 @router.get("/{project_code}", response_model=ProjectDetail)
-def project_detail(project_code: str):
+def project_detail(project_code: str, db: Session = Depends(get_db)):
     """Detail for one project (404 when the identifier is unknown)."""
     try:
-        data = project_service.get_project(project_code)
+        data = project_service.get_project(db, project_code)
     except project_service.ProjectServiceError as exc:
         logger.error("project dataset error: %s", exc)
         raise HTTPException(

@@ -47,6 +47,11 @@ class Settings:
                       str(PROJECT_ROOT / "data" / "processed"
                           / "paimana_features.csv")))
 
+        # --- database (Phase 8): project-relative SQLite by default --------
+        self.database_url: str = os.getenv(
+            "PAIMANA_DATABASE_URL",
+            "sqlite:///" + (PROJECT_ROOT / "data" / "paimana.db").as_posix())
+
         # --- CORS: only the future React dev server (Phase 7+) ------------
         self.cors_origins: list[str] = _split_csv(os.getenv(
             "PAIMANA_CORS_ORIGINS",

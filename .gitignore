@@ -1,0 +1,7 @@
+# PAIMANA AI - ignore environment-local / generated files
+__pycache__/
+*.pyc
+# database files (environment-specific; never in source control)
+data/*.db
+data/*.db-*
+.env

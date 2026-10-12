@@ -1,4 +1,4 @@
-# PAIMANA AI backend - Phase 7.1 (backend foundation only)
+# PAIMANA AI backend - Phase 8 (database integration)
 # Versions verified against the current environment (Python 3.13.12).
 fastapi==0.115.6
 uvicorn==0.34.0
@@ -8,3 +8,5 @@ httpx==0.28.1
 pydantic>=2.0
 # uvicorn --reload file watcher (installed separately if absent)
 watchfiles>=1.0
+# database layer (SQLite via stdlib sqlite3; URL configurable for PostgreSQL)
+sqlalchemy==2.0.36

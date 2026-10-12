@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
+from ..db.session import get_db
 from ..schemas import RiskSummaryResponse
 from ..services import risk_service
 
@@ -14,10 +16,10 @@ router = APIRouter()
 
 
 @router.get("/summary", response_model=RiskSummaryResponse)
-def risk_summary():
-    """Counts computed from the existing outputs (no new formulas)."""
+def risk_summary(db: Session = Depends(get_db)):
+    """Counts from the persisted artifacts (no new formulas)."""
     try:
-        data = risk_service.summary()
+        data = risk_service.summary(db)
     except risk_service.RiskServiceError as exc:
         logger.error("risk output error: %s", exc)
         raise HTTPException(

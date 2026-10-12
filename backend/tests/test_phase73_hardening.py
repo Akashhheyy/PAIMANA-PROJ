@@ -25,10 +25,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from backend.app.config import get_settings  # noqa: E402
 from backend.app.main import app  # noqa: E402
-from backend.app.services import (  # noqa: E402
-    model_service, project_service, risk_service)
+from backend.app.services import model_service, risk_service  # noqa: E402
 
 client = TestClient(app)
 
@@ -150,10 +148,12 @@ class TestDeterminism(unittest.TestCase):
 
 
 class TestServiceFailures(unittest.TestCase):
-    """§8/§13 missing artifacts and unavailable data -> clean service errors.
+    """§8/§13 missing model artifact and unavailable database -> clean errors.
 
-    Simulated by pointing the service at non-existent paths INSIDE THE TEST
-    ONLY (original files are never touched) and restoring state afterwards."""
+    * Model artifacts are simulated as missing by pointing the service at a
+      non-existent path INSIDE THE TEST ONLY (originals never touched).
+    * Database unavailability is simulated by overriding the `get_db`
+      dependency with a session bound to an unopenable SQLite file."""
 
     def test_missing_model_artifact_returns_clean_503(self) -> None:
         real_cost, real_time = (model_service.rs06.COST_PIPELINE,
@@ -171,36 +171,45 @@ class TestServiceFailures(unittest.TestCase):
             model_service.get_pipelines.cache_clear()
             model_service.get_pipelines()      # reload the real models
 
+    @staticmethod
+    def _broken_db_override():
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import Session
+
+        from backend.app.db.session import get_db
+        broken = create_engine(
+            "sqlite:////nonexistent_dir_paimana/missing.db")
+
+        def broken_get_db():
+            session = Session(broken)
+            try:
+                yield session
+            finally:
+                session.close()
+
+        return get_db, broken_get_db
+
     def test_unavailable_project_data_returns_clean_500(self) -> None:
-        settings = get_settings()
-        real_path = settings.features_csv
+        from backend.app.main import app
+        get_db, broken_get_db = self._broken_db_override()
+        app.dependency_overrides[get_db] = broken_get_db
         try:
-            project_service.projects_frame.cache_clear()
-            settings.features_csv = Path("missing/features.csv")
             resp = client.get("/api/projects")
             self.assertEqual(resp.status_code, 500)
             assert_clean_error(self, resp)
         finally:
-            settings.features_csv = real_path
-            project_service.projects_frame.cache_clear()
-            project_service.projects_frame()   # reload real data
+            app.dependency_overrides.pop(get_db, None)
 
     def test_unavailable_risk_data_returns_clean_500(self) -> None:
-        settings = get_settings()
-        real_dir = settings.risk_output_dir
+        from backend.app.main import app
+        get_db, broken_get_db = self._broken_db_override()
+        app.dependency_overrides[get_db] = broken_get_db
         try:
-            risk_service.risk_frame.cache_clear()
-            risk_service.warnings_frame.cache_clear()
-            settings.risk_output_dir = Path("missing/risk")
             resp = client.get("/api/risk/summary")
             self.assertEqual(resp.status_code, 500)
             assert_clean_error(self, resp)
         finally:
-            settings.risk_output_dir = real_dir
-            risk_service.risk_frame.cache_clear()
-            risk_service.warnings_frame.cache_clear()
-            risk_service.risk_frame()
-            risk_service.warnings_frame()
+            app.dependency_overrides.pop(get_db, None)
 
 
 class TestModelLoading(unittest.TestCase):

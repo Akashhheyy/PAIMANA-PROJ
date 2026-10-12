@@ -1,116 +1,30 @@
-"""Project service - reads the EXISTING generated project data.
+"""Project service - SQLite-backed (Phase 8), same response contracts.
 
-* Primary record source: data/processed/paimana_features.csv (Phase 3),
-  loaded ONCE (lru_cache); risk_category joined from the Phase-5 output.
-* Lookup by project_code (the existing unique identifier).
-* Read-only: the CSV is never modified, and pagination/search happens
-  in pandas over the single in-memory frame (not per-request disk loads).
+- Reads projects (and their Phase-5 risk category) from the database with
+  SQL pagination/search - never loads the whole dataset per request.
+- `progress_distribution` aggregates with SQL (bins 0..100 inclusive of
+  exactly 100%); an optional `frame` argument is retained purely as a
+  unit-test hook for synthetic boundary data.
+- Query failures are wrapped in ProjectServiceError so routes can return a
+  clean 500 without exposing SQL, paths or stack traces.
 """
 
 from __future__ import annotations
 
-from functools import lru_cache
-
 import numpy as np
 import pandas as pd
+from sqlalchemy import String, and_, cast, case, func, or_, select
+from sqlalchemy.orm import Session
 
-from ..config import get_settings
-from . import risk_service
+from ..db.models import Project, RiskResult
 
 
 class ProjectServiceError(RuntimeError):
-    """Raised when the project dataset cannot be read (clean message)."""
-
-
-@lru_cache(maxsize=1)
-def projects_frame() -> pd.DataFrame:
-    """paimana_features.csv loaded once, with risk_category attached."""
-    path = get_settings().features_csv
-    if not path.exists():
-        raise ProjectServiceError("project dataset is unavailable")
-    try:
-        df = pd.read_csv(path)
-    except Exception as exc:
-        raise ProjectServiceError("project dataset could not be read") from exc
-    # attach existing Phase-5 category (no recomputation)
-    risk = risk_service.risk_frame()[["project_code", "risk_category"]]
-    df = df.merge(risk, on="project_code", how="left")
-    return df
-
-
-def _summary(row: pd.Series) -> dict:
-    return {
-        "project_code": int(row["project_code"]),
-        "project_name": str(row["project_name"]),
-        "state": str(row["state"]),
-        "agency": str(row["agency"]),
-        "report_month": str(row.get("report_month", "")),
-        "risk_category": (None if pd.isna(row.get("risk_category"))
-                          else str(row["risk_category"])),
-    }
-
-
-def _detail(row: pd.Series) -> dict:
-    def s(col):
-        v = row.get(col)
-        return None if pd.isna(v) else str(v)
-
-    def f(col):
-        v = row.get(col)
-        return None if pd.isna(v) else float(v)
-
-    return {
-        **_summary(row),
-        "approval_date": s("approval_date"),
-        "start_date": s("start_date"),
-        "target_doc": s("target_doc"),
-        "revised_doc": s("revised_doc"),
-        "original_cost_crore": f("original_cost_crore"),
-        "revised_cost_crore": f("revised_cost_crore"),
-        "cumulative_expenditure_crore": f("cumulative_expenditure_crore"),
-        "physical_progress_pct": f("physical_progress_pct"),
-        "planned_horizon_months": f("planned_horizon_months"),
-    }
-
-
-def list_projects(page: int, page_size: int, search: str | None
-                  ) -> tuple[list[dict], int]:
-    """Paginated project list; `search` matches name/state/agency/code."""
-    df = projects_frame()
-    if search:
-        needle = search.lower().strip()
-        mask = (
-            df["project_name"].str.lower().str.contains(needle, na=False)
-            | df["state"].str.lower().str.contains(needle, na=False)
-            | df["agency"].str.lower().str.contains(needle, na=False)
-            | df["project_code"].astype(str).str.contains(needle, na=False)
-        )
-        df = df[mask]
-    total = int(len(df))
-    start = (page - 1) * page_size
-    page_rows = df.iloc[start:start + page_size]
-    return [_summary(r) for _, r in page_rows.iterrows()], total
-
-
-def get_project(project_code: str) -> dict | None:
-    """Detail for one project; None when the code is unknown/non-numeric."""
-    try:
-        code = int(str(project_code).strip())
-    except (TypeError, ValueError):
-        return None
-    df = projects_frame()
-    rows = df[df["project_code"] == code]
-    if rows.empty:
-        return None
-    return _detail(rows.iloc[0])
-
-
-def project_exists(project_code: str) -> bool:
-    return get_project(project_code) is not None
+    """Raised when project data cannot be read (clean message)."""
 
 
 # ---------------------------------------------------------------------------
-# Phase 7.4 - Graph 1 aggregation (read-only, cached frame, no ML imports)
+# Progress binning constants (Phase 7.4 contract: [0,10], (10,20], ... (90,100])
 # ---------------------------------------------------------------------------
 PROGRESS_BIN_EDGES = list(range(0, 101, 10))
 PROGRESS_BIN_LABELS = [f"{PROGRESS_BIN_EDGES[i]}-{PROGRESS_BIN_EDGES[i + 1]}"
@@ -118,49 +32,177 @@ PROGRESS_BIN_LABELS = [f"{PROGRESS_BIN_EDGES[i]}-{PROGRESS_BIN_EDGES[i + 1]}"
 SNAPSHOT_LABEL = "April 2026"
 
 
-def progress_distribution(agency: str | None = None,
+def _iso(value) -> str | None:
+    return None if value is None else value.isoformat()
+
+
+def _summary(p: Project, risk_category: str | None) -> dict:
+    return {
+        "project_code": int(p.project_code),
+        "project_name": str(p.project_name),
+        "state": str(p.state),
+        "agency": str(p.agency),
+        "report_month": str(p.report_month),
+        "risk_category": (None if risk_category is None
+                          else str(risk_category)),
+    }
+
+
+def _detail(p: Project) -> dict:
+    return {
+        "project_code": int(p.project_code),
+        "project_name": str(p.project_name),
+        "state": str(p.state),
+        "agency": str(p.agency),
+        "report_month": str(p.report_month),
+        "approval_date": _iso(p.approval_date),
+        "start_date": _iso(p.start_date),
+        "target_doc": _iso(p.target_doc),
+        "revised_doc": _iso(p.revised_doc),
+        "original_cost_crore": p.original_cost_crore,
+        "revised_cost_crore": p.revised_cost_crore,
+        "cumulative_expenditure_crore": p.cumulative_expenditure_crore,
+        "physical_progress_pct": p.physical_progress_pct,
+        "planned_horizon_months": None,   # filled by caller when computable
+    }
+
+
+def list_projects(db: Session, page: int, page_size: int,
+                  search: str | None) -> tuple[list[dict], int]:
+    """Paginated list; search matches name/state/agency/code (LIKE)."""
+    try:
+        query = select(Project, RiskResult.risk_category).outerjoin(
+            RiskResult,
+            and_(RiskResult.project_code == Project.project_code,
+                 RiskResult.report_month == Project.report_month))
+        count_query = select(func.count()).select_from(Project)
+        if search:
+            like = f"%{search.strip()}%"
+            cond = or_(
+                Project.project_name.ilike(like),
+                Project.state.ilike(like),
+                Project.agency.ilike(like),
+                cast(Project.project_code, String).ilike(like))
+            query = query.where(cond)
+            count_query = count_query.where(cond)
+        total = int(db.scalar(count_query) or 0)
+        rows = db.execute(
+            query.order_by(Project.id)          # CSV import order preserved
+            .offset((page - 1) * page_size).limit(page_size)).all()
+        return [_summary(p, rc) for p, rc in rows], total
+    except Exception:
+        raise ProjectServiceError("project data could not be read") from None
+
+
+def get_project(db: Session, project_code: str) -> dict | None:
+    """Detail for one project; None when the code is unknown/non-numeric."""
+    try:
+        code = int(str(project_code).strip())
+    except (TypeError, ValueError):
+        return None
+    try:
+        p = db.scalar(select(Project).where(Project.project_code == code))
+        if p is None:
+            return None
+        detail = _detail(p)
+        # planned_horizon_months kept identical to the pre-DB contract:
+        if p.start_date and p.target_doc:
+            detail["planned_horizon_months"] = float(
+                (p.target_doc.year * 12 + p.target_doc.month)
+                - (p.start_date.year * 12 + p.start_date.month))
+        return detail
+    except Exception:
+        raise ProjectServiceError("project data could not be read") from None
+
+
+def _bins_from_pandas(included: pd.Series) -> list[dict]:
+    counts = (pd.cut(included, bins=PROGRESS_BIN_EDGES, right=True,
+                     include_lowest=True, labels=PROGRESS_BIN_LABELS)
+              .value_counts().reindex(PROGRESS_BIN_LABELS, fill_value=0))
+    return [{"label": lab, "count": int(counts[lab])}
+            for lab in PROGRESS_BIN_LABELS]
+
+
+def progress_distribution(db: Session | None = None,
+                          agency: str | None = None,
                           state: str | None = None,
                           frame: pd.DataFrame | None = None) -> dict:
     """Physical-progress histogram for the dashboard (Graph 1).
 
     Bins: [0,10], (10,20], ..., (90,100] - the last bin INCLUDES exactly
-    100% (verified pitfall: 97 projects sit at 100.0). Every eligible
-    project belongs to exactly one bin; `sum(bins) == projects_included`
-    is asserted. Missing progress is excluded from bins and COUNTED, never
-    zero-filled. Optional `frame` exists purely for unit-testing boundaries.
+    100% (verified pitfall: 97 projects at 100.0). Missing progress is
+    excluded from the bins and counted, never zero-filled. `frame` is a
+    unit-test hook (synthetic boundary data); production uses SQL only.
     """
-    df = projects_frame() if frame is None else frame
-    if agency:
-        df = df[df["agency"] == agency.strip()]
-    if state:
-        df = df[df["state"] == state.strip()]
+    if frame is not None:                      # pure-pandas test path
+        total = int(len(frame))
+        raw = (frame["physical_progress_pct"]
+               if "physical_progress_pct" in frame.columns
+               else pd.Series(np.nan, index=frame.index))
+        progress = pd.to_numeric(raw, errors="coerce")
+        included = progress[progress.notna()]
+        missing = total - int(len(included))
+        bins = _bins_from_pandas(included)
+        mean = (round(float(included.mean()), 2) if len(included) else None)
+        median = (round(float(included.median()), 2) if len(included) else None)
+    else:
+        if db is None:
+            raise ProjectServiceError("database session is required")
+        try:
+            p = Project.physical_progress_pct
+            conds = []
+            if agency:
+                conds.append(Project.agency == agency.strip())
+            if state:
+                conds.append(Project.state == state.strip())
+            bin_conds = []
+            for i, (lo, hi) in enumerate(zip(PROGRESS_BIN_EDGES[:-1],
+                                             PROGRESS_BIN_EDGES[1:])):
+                bin_conds.append((p >= lo if i == 0 else p > lo, p <= hi))
+            row = db.execute(
+                select(func.count(), func.count().filter(p.is_(None)),
+                       *[func.count().filter(and_(*bc)) for bc in bin_conds],
+                       func.avg(p)).select_from(Project).where(*conds)).one()
+            total, missing, avg = int(row[0]), int(row[1]), row[-1]
+            bin_counts = [int(c) for c in row[2:-1]]
+            included = total - missing
+            if sum(bin_counts) != included:
+                raise ProjectServiceError(
+                    "progress binning failed range validation")
+            bins = [{"label": lab, "count": cnt}
+                    for lab, cnt in zip(PROGRESS_BIN_LABELS, bin_counts)]
+            mean = round(float(avg), 2) if avg is not None else None
+            median = None
+            if included:
+                ordered = select(p).where(*conds, p.isnot(None)).order_by(p)
+                n = included
+                lo = int(db.scalar(ordered.offset((n - 1) // 2).limit(1)))
+                hi = int(db.scalar(ordered.offset(n // 2).limit(1)))
+                median = round((lo + hi) / 2, 2)
+        except ProjectServiceError:
+            raise
+        except Exception:
+            raise ProjectServiceError(
+                "project progress could not be read") from None
 
-    total = int(len(df))
-    raw = (df["physical_progress_pct"] if "physical_progress_pct" in df.columns
-           else pd.Series(np.nan, index=df.index))
-    progress = pd.to_numeric(raw, errors="coerce")
-    included = progress[progress.notna()]
-    missing = total - int(len(included))
-
-    counts = (pd.cut(included, bins=PROGRESS_BIN_EDGES, right=True,
-                     include_lowest=True, labels=PROGRESS_BIN_LABELS)
-              .value_counts()
-              .reindex(PROGRESS_BIN_LABELS, fill_value=0))
-    bins = [{"label": lab, "count": int(counts[lab])}
-            for lab in PROGRESS_BIN_LABELS]
-    assert sum(b["count"] for b in bins) == len(included), \
+    expected_included = (int(pd.to_numeric(
+        frame["physical_progress_pct"], errors="coerce").notna().sum())
+        if frame is not None else included)
+    assert sum(b["count"] for b in bins) == expected_included, \
         "every eligible project must belong to exactly one bin"
-
     return {
         "snapshot_label": SNAPSHOT_LABEL,
         "total_projects": total,
-        "projects_included": int(len(included)),
+        "projects_included": int(expected_included),
         "projects_missing_progress": missing,
         "bins": bins,
-        "mean_progress": (round(float(included.mean()), 2)
-                          if len(included) else None),
-        "median_progress": (round(float(included.median()), 2)
-                            if len(included) else None),
+        "mean_progress": mean,
+        "median_progress": median,
         "agency_filter": agency,
         "state_filter": state,
     }
+
+
+def project_exists(db: Session, project_code: str) -> bool:
+    return get_project(db, project_code) is not None
+

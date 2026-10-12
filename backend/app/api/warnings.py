@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 
+from ..db.session import get_db
 from ..schemas import EarlyWarningListResponse
 from ..services import risk_service
 
@@ -23,6 +25,7 @@ def list_early_warnings(
                           "DATA_COMPLETENESS_WARNING"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
 ):
     """Existing early warnings with optional filters + pagination.
     No new warning rules are created here - rows are returned as generated
@@ -39,7 +42,7 @@ def list_early_warnings(
                    f"{sorted(risk_service.VALID_WARNING_TYPES)}")
     try:
         items, total = risk_service.list_warnings(
-            risk_category, warning_type, page, page_size)
+            db, risk_category, warning_type, page, page_size)
     except risk_service.RiskServiceError as exc:
         logger.error("early-warning output error: %s", exc)
         raise HTTPException(

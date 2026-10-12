@@ -43,27 +43,38 @@ ALL_ENDPOINTS = [
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load trained models and existing ML outputs ONCE at startup.
+    """Load trained models ONCE at startup; check (never create) the DB.
 
-    Fail fast with a clean message if an artifact is missing; afterwards the
-    cached objects are reused by every request (no per-request joblib.load)."""
-    from .services import model_service, project_service, risk_service
+    Fail fast if a model artifact is missing (clean message). The database
+    is only checked for reachability - schema initialization and snapshot
+    import are EXPLICIT commands (python -m backend.app.db.init_db /
+    import_snapshot), never performed or destructive at startup."""
+    from .services import model_service
 
-    logger.info("startup: loading trained models and existing ML outputs ...")
+    logger.info("startup: loading trained models ...")
     try:
         model_service.get_pipelines()
-        risk_service.risk_frame()
-        risk_service.warnings_frame()
-        project_service.projects_frame()
     except Exception as exc:
         logger.error("startup failed: %s", exc)
         raise RuntimeError(
-            "backend startup failed: trained models or ML outputs are "
-            "unavailable") from None
+            "backend startup failed: trained models are unavailable") from None
     info = model_service.model_info()
     logger.info("startup OK: cost=%s time=%s features=%s",
                 info["cost_model_type"], info["time_model_type"],
                 len(info["feature_schema"]))
+
+    # read-only database reachability check (no migrations/imports at startup)
+    from sqlalchemy import text
+    from .db.session import SessionLocal
+    try:
+        with SessionLocal() as db:
+            db.execute(text("SELECT 1"))
+        logger.info("database reachable: %s", settings.database_url)
+    except Exception:
+        logger.warning(
+            "database not initialized yet - run: "
+            "python -m backend.app.db.init_db && "
+            "python -m backend.app.db.import_snapshot")
     yield
 
 app = FastAPI(
