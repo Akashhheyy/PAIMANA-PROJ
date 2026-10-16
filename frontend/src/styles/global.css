@@ -452,3 +452,160 @@ p {
   }
 }
 
+/* ---------- project table (Phase 9.3) ---------- */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+table.projects {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+}
+table.projects th {
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+table.projects td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+table.projects tr:last-child td {
+  border-bottom: none;
+}
+table.projects tr.clickable {
+  cursor: pointer;
+}
+table.projects tr.clickable:hover {
+  background: var(--accent-soft);
+}
+
+.table-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.search-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+}
+.search-field input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  color: var(--ink);
+  min-width: 220px;
+}
+select.select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.86rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- risk chips ---------- */
+.risk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  border: 1px solid transparent;
+}
+.risk-chip--high {
+  background: var(--high-soft);
+  color: var(--high);
+  border-color: var(--high-soft);
+}
+.risk-chip--medium {
+  background: var(--medium-soft);
+  color: var(--medium);
+  border-color: var(--medium-soft);
+}
+.risk-chip--low {
+  background: var(--low-soft);
+  color: var(--low);
+  border-color: var(--low-soft);
+}
+.risk-chip--none {
+  background: var(--bg);
+  color: var(--ink-soft);
+  border-color: var(--border);
+}
+
+/* ---------- project detail page (Phase 9.3) ---------- */
+.detail-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px 22px;
+  margin-top: 10px;
+}
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.detail-field p:first-child {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+.detail-field p:last-child {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+@media (max-width: 960px) {
+  .detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

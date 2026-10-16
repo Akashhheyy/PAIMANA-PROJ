@@ -8,7 +8,9 @@ import type {
   EarlyWarningListResponse,
   HealthResponse,
   ProgressDistributionResponse,
+  ProjectDetail,
   ProjectListResponse,
+  ProjectRiskResponse,
   RiskSummaryResponse,
 } from './types';
 
@@ -105,6 +107,18 @@ export function getProjects(params?: {
   if (params?.search) search.set('search', params.search);
   const qs = search.toString();
   return request<ProjectListResponse>(`/api/projects${qs ? `?${qs}` : ''}`);
+}
+
+export function getProject(project_code: string | number): Promise<ProjectDetail> {
+  return request<ProjectDetail>(`/api/projects/${String(project_code)}`);
+}
+
+export function getProjectRisk(
+  project_code: string | number,
+): Promise<ProjectRiskResponse> {
+  return request<ProjectRiskResponse>(
+    `/api/projects/${String(project_code)}/risk`,
+  );
 }
 
 export function getEarlyWarnings(params?: {

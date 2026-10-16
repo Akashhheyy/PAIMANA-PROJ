@@ -91,3 +91,44 @@ export interface HealthResponse {
   service: string;
   version: string;
 }
+
+/** ProjectDetail (schemas/projects.py) */
+export interface ProjectDetail {
+  project_code: number;
+  project_name: string;
+  state: string;
+  agency: string;
+  report_month: string;
+  risk_category: string | null;
+  approval_date: string | null;
+  start_date: string | null;
+  target_doc: string | null;
+  revised_doc: string | null;
+  original_cost_crore: number | null;
+  revised_cost_crore: number | null;
+  cumulative_expenditure_crore: number | null;
+  physical_progress_pct: number | null;
+  planned_horizon_months: number | null;
+}
+
+/** ProjectRiskResponse (schemas/risk.py) */
+export interface ProjectRiskResponse {
+  project_code: number;
+  project_name: string;
+  state: string;
+  agency: string;
+  report_month: string | null;
+  cost_overrun_probability: number | null;
+  time_overrun_probability: number | null;
+  combined_risk_score: number | null;
+  risk_category: string;
+  score_status: string;
+  missing_component: string;
+  warning_type: string;
+  warning_priority: string;
+  warning_priority_label: string;
+  warning_message: string;
+  risk_indicators: string;
+  recommended_action: string;
+}
+
