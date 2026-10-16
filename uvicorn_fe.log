@@ -1,0 +1,5 @@
+INFO:     127.0.0.1:61362 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/risk/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/dashboard/progress-distribution HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61362 - "GET /api/risk/summary HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49806 - "GET /api/risk/summary HTTP/1.1" 200 OK

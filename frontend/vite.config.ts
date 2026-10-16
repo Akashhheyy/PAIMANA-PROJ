@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // PAIMANA AI frontend - dev server pinned to port 5173 (backend CORS allows it)
