@@ -18,6 +18,13 @@ function riskChipClass(category: string): string {
   }
 }
 
+function formatDate(value: string | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '—';
+  }
+  return value;
+}
+
 function formatNumber(value: number | null | undefined, suffix = ''): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return '—';
@@ -172,11 +179,11 @@ export function ProjectDetailPage() {
           </div>
           <div className="detail-field">
             <p className="muted">Approval date</p>
-            <p>{formatNumber(project.approval_date)}</p>
+            <p>{formatDate(project.approval_date)}</p>
           </div>
           <div className="detail-field">
             <p className="muted">Start date</p>
-            <p>{formatNumber(project.start_date)}</p>
+            <p>{formatDate(project.start_date)}</p>
           </div>
           <div className="detail-field">
             <p className="muted">Physical progress</p>

@@ -2,25 +2,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-const mockGetProjects = vi.fn();
-
-class MockApiError extends Error {
-  status: number;
-  constructor(message: string, status = 0) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-  }
-}
-
 vi.mock('../api/client', () => ({
-  getProjects: mockGetProjects,
-  ApiError: MockApiError,
+  getProjects: vi.fn(),
+  ApiError: class MockApiError extends Error {
+    status: number;
+    constructor(status: number, message: string) {
+      super(message);
+      this.name = 'ApiError';
+      this.status = status;
+    }
+  },
 }));
 
+import { getProjects, ApiError } from '../api/client';
+import type { ProjectListResponse } from '../api/types';
 import { ProjectsPage } from '../pages/ProjectsPage';
 
-const baseResponse = {
+const mockGetProjects = vi.mocked(getProjects);
+
+const baseResponse: ProjectListResponse = {
   items: [
     {
       project_code: 101,
@@ -92,7 +92,7 @@ describe('ProjectsPage', () => {
   });
 
   it('applies the search parameter and resets to page 1', async () => {
-    mockGetProjects.mockResolvedValue({ ...baseResponse, items: [], total: 0 });
+    mockGetProjects.mockResolvedValue(baseResponse);
     render(
       <MemoryRouter initialEntries={['/projects']}>
         <ProjectsPage />
@@ -112,13 +112,14 @@ describe('ProjectsPage', () => {
   });
 
   it('paginates to the next page using the backend contract', async () => {
-    mockGetProjects.mockResolvedValue(baseResponse);
+    const manyPages = { ...baseResponse, total: 105, items: baseResponse.items.slice(0, 1) };
+    mockGetProjects.mockResolvedValue(manyPages);
     render(
       <MemoryRouter initialEntries={['/projects?page=1&page_size=20&search=']}>
         <ProjectsPage />
       </MemoryRouter>,
     );
-    await waitFor(() => screen.getByText('Page 1 of 1'));
+    await waitFor(() => screen.getByText('Page 1 of 6'));
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     await waitFor(() =>
       expect(mockGetProjects).toHaveBeenLastCalledWith({
@@ -154,7 +155,7 @@ describe('ProjectsPage', () => {
   });
 
   it('shows a retryable error state when the API fails', async () => {
-    mockGetProjects.mockRejectedValue(new MockApiError('Backend is unreachable.', 0));
+    mockGetProjects.mockRejectedValue(new ApiError(0, 'Backend is unreachable.'));
     render(
       <MemoryRouter initialEntries={['/projects']}>
         <ProjectsPage />

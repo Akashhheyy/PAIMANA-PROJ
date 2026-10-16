@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError, getProjects } from '../api/client';
 import type { ProjectListResponse } from '../api/types';
-import { ErrorState, LoadingState, Section } from '../components/States';
+import { EmptyState, ErrorState, LoadingState, Section } from '../components/States';
 
 const PAGE_SIZES = [20, 50, 100] as const;
 
@@ -54,9 +54,8 @@ export function ProjectsPage() {
 
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSizeRaw = Number(searchParams.get('page_size'));
-  const pageSize = (PAGE_SIZES as number[]).includes(pageSizeRaw)
-    ? pageSizeRaw
-    : PAGE_SIZES[0];
+  const validPageSizes = new Set<number>(PAGE_SIZES);
+  const pageSize = validPageSizes.has(pageSizeRaw) ? pageSizeRaw : PAGE_SIZES[0];
   const search = searchParams.get('search') || '';
 
   useEffect(() => {
@@ -111,11 +110,11 @@ export function ProjectsPage() {
     setSearchParams({ page: String(currentPage + 1) });
   };
 
-  if (loading || !data) {
-    return <LoadingState label="Loading projects…" />;
-  }
   if (state.error) {
     return <ErrorState message={state.error} onRetry={retry} />;
+  }
+  if (loading || !data) {
+    return <LoadingState label="Loading projects…" />;
   }
 
   return (
@@ -171,48 +170,54 @@ export function ProjectsPage() {
           </span>
         }
       >
-        <div className="table-wrap">
-          <table className="projects" aria-label="Project register">
-            <thead>
-              <tr>
-                <th style={{ width: '14%' }}>Project code</th>
-                <th style={{ width: '30%' }}>Project name</th>
-                <th style={{ width: '18%' }}>Agency</th>
-                <th style={{ width: '12%' }}>State</th>
-                <th style={{ width: '14%' }}>Report month</th>
-                <th style={{ width: '12%' }}>Risk category</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((row) => (
-                <tr
-                  key={String(row.project_code)}
-                  className="clickable"
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`View project ${row.project_code} - ${row.project_name}`}
-                  onClick={() => navigate(`/projects/${row.project_code}`)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      navigate(`/projects/${row.project_code}`);
-                    }
-                  }}
-                >
-                  <td>{row.project_code}</td>
-                  <td>{row.project_name}</td>
-                  <td>{row.agency}</td>
-                  <td>{row.state}</td>
-                  <td>{row.report_month}</td>
-                  <td>
-                    <span className={riskChipClass(row.risk_category)}>
-                      {riskLabel(row.risk_category)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {data.items.length === 0 ? (
+          <EmptyState message={`No projects match “${search}”.`} />
+        ) : (
+          <>
+            <div className="table-wrap">
+              <table className="projects" aria-label="Project register">
+                <thead>
+                  <tr>
+                    <th style={{ width: '14%' }}>Project code</th>
+                    <th style={{ width: '30%' }}>Project name</th>
+                    <th style={{ width: '18%' }}>Agency</th>
+                    <th style={{ width: '12%' }}>State</th>
+                    <th style={{ width: '14%' }}>Report month</th>
+                    <th style={{ width: '12%' }}>Risk category</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.items.map((row) => (
+                    <tr
+                      key={String(row.project_code)}
+                      className="clickable"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`View project ${row.project_code} - ${row.project_name}`}
+                      onClick={() => navigate(`/projects/${row.project_code}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          navigate(`/projects/${row.project_code}`);
+                        }
+                      }}
+                    >
+                      <td>{row.project_code}</td>
+                      <td>{row.project_name}</td>
+                      <td>{row.agency}</td>
+                      <td>{row.state}</td>
+                      <td>{row.report_month}</td>
+                      <td>
+                        <span className={riskChipClass(row.risk_category)}>
+                          {riskLabel(row.risk_category)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </Section>
 
       <div className="pagination">
