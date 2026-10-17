@@ -3,7 +3,8 @@
 Scope of THIS phase (nothing more):
 * GET /        -> simple API information
 * GET /health  -> liveness check
-* CORS restricted to the future React dev server (localhost:5173)
+* CORS restricted to the React dev server (localhost:5173, 127.0.0.1:5173,
+  and the local-network dev IP configured via PAIMANA_CORS_ORIGINS)
 
 Not built here (later phases): database, ML/project/risk endpoints,
 React frontend, LLM, RAG, deployment. Nothing under models/, ml/ or
@@ -88,10 +89,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# --- CORS: allow ONLY the future React development server (Step 5) ----------
+# --- CORS: allow ONLY the React development server (Step 5) ---------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,   # default: localhost:5173 variants
+    allow_origins=settings.cors_origins,  # env-driven via PAIMANA_CORS_ORIGINS
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

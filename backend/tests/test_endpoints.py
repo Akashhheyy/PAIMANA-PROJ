@@ -77,6 +77,17 @@ class CorsAndConfigTests(unittest.TestCase):
         self.assertEqual(resp.headers.get("access-control-allow-origin"),
                          "http://localhost:5173")
 
+    def test_cors_preflight_from_network_origin(self) -> None:
+        """The configured local-network dev origin is allowed for preflight."""
+        resp = TestClient(app).options(
+            "/health",
+            headers={"Origin": "http://10.64.193.169:5173",
+                     "Access-Control-Request-Method": "GET"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.headers.get("access-control-allow-origin"),
+            "http://10.64.193.169:5173")
+
     def client_options(self):
         return TestClient(app).options(
             "/health",

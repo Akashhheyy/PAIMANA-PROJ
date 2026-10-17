@@ -48,7 +48,7 @@ Optional environment variables (all have safe defaults — see `app/config.py`):
 | `PAIMANA_API_VERSION` | `0.1.0` |
 | `PAIMANA_HOST` | `127.0.0.1` |
 | `PAIMANA_PORT` | `8000` |
-| `PAIMANA_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` |
+| `PAIMANA_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173,http://10.64.193.169:5173` |
 | `PAIMANA_MODELS_DIR` | `<project root>/models` (relative) |
 | `PAIMANA_RISK_DIR` | `<project root>/outputs/risk` (relative) |
 | `PAIMANA_DATABASE_URL` | `sqlite:///<project root>/data/paimana.db` (relative; set to a PostgreSQL URL to port) |
@@ -134,8 +134,9 @@ Architecture: `Route → Service → existing ML artifact/logic → response sch
 Models are loaded **once** at startup (cached); no retraining, no new risk
 formulas, no new warning rules — thresholds come from `ml/06`/`ml/07`.
 
-**CORS:** restricted to the future React dev server
-(`http://localhost:5173`, `http://127.0.0.1:5173`) — not unrestricted.
+**CORS:** restricted to the React dev server
+(`http://localhost:5173`, `http://127.0.0.1:5173`, and any additional origins
+set via `PAIMANA_CORS_ORIGINS`) — not unrestricted.
 
 ## Running the tests
 

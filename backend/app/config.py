@@ -52,10 +52,11 @@ class Settings:
             "PAIMANA_DATABASE_URL",
             "sqlite:///" + (PROJECT_ROOT / "data" / "paimana.db").as_posix())
 
-        # --- CORS: only the future React dev server (Phase 7+) ------------
+        # --- CORS: only the React dev server (Phase 7+; configurable) -------
         self.cors_origins: list[str] = _split_csv(os.getenv(
             "PAIMANA_CORS_ORIGINS",
-            "http://localhost:5173,http://127.0.0.1:5173"))
+            "http://localhost:5173,http://127.0.0.1:5173,"
+            "http://10.64.193.169:5173"))
 
     def public_dict(self) -> dict:
         """Non-sensitive settings safe to expose for diagnostics."""
