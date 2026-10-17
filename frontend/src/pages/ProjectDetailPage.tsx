@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, getProject, getProjectRisk } from '../api/client';
 import type { ProjectDetail, ProjectRiskResponse } from '../api/types';
 import { ErrorState, LoadingState, Section } from '../components/States';
+import { MetricCard } from '../components/MetricCard';
+import { RiskComparisonChart } from '../components/RiskComparisonChart';
 
 function riskChipClass(category: string): string {
   switch (category) {
@@ -39,11 +41,13 @@ interface DetailState {
 }
 
 /**
- * Project detail (Phase 9.3).
+ * Project detail (Phase 9.4).
  * Fetches GET /api/projects/{project_code} plus
  * GET /api/projects/{project_code}/risk.
- * Nullable values (e.g. time overrun probability) are shown as "—", never
- * replaced with zero. Risk visualization is intentionally deferred to 9.4.
+ * Displays cost-overrun and time-overrun probability cards, a comparison
+ * chart, combined score/category, and all project and warning fields from the
+ * backend. Nullable values (e.g. time overrun probability) are shown as "—",
+ * never replaced with zero.
  */
 export function ProjectDetailPage() {
   const { projectCode } = useParams<{ projectCode: string }>();
@@ -208,63 +212,91 @@ export function ProjectDetailPage() {
         </div>
       </Section>
 
-      <Section title="Risk assessment">
-        <p className="muted">
-          Persisted risk score and early warning from the backend risk engine.
-        </p>
-        <div className="detail-grid">
-          <div className="detail-field">
-            <p className="muted">Risk category</p>
-            <p>
-              <span className={riskChipClass(risk.risk_category)}>
+      <Section
+        title="Risk assessment"
+        subtitle="Cost and schedule risk probabilities, combined score, and early warning from the backend risk engine"
+      >
+        <div className="risk-summary-row">
+          <MetricCard
+            label="Cost overrun probability"
+            value={
+              risk.cost_overrun_probability == null
+                ? '—'
+                : `${risk.cost_overrun_probability}%`
+            }
+            tone="high"
+            className="metric-card--probability"
+          />
+          <MetricCard
+            label="Time overrun probability"
+            value={
+              risk.time_overrun_probability == null
+                ? '—'
+                : `${risk.time_overrun_probability}%`
+            }
+            tone="medium"
+            className="metric-card--probability"
+          />
+          <MetricCard
+            label="Combined risk score"
+            value={
+              risk.combined_risk_score == null
+                ? '—'
+                : risk.combined_risk_score
+            }
+            tone={risk.risk_category as
+              | 'high'
+              | 'medium'
+              | 'low'
+              | 'default'}
+            className="metric-card--accent"
+          />
+          <div className="metric-card">
+            <div className="metric-top">
+              <span className="metric-label">Risk category</span>
+              <span
+                className={riskChipClass(risk.risk_category)}
+              >
                 {risk.risk_category}
               </span>
-            </p>
+            </div>
+            <p className="metric-value">{risk.risk_category}</p>
           </div>
-          <div className="detail-field">
-            <p className="muted">Score status</p>
-            <p>{risk.score_status}</p>
-          </div>
-          <div className="detail-field">
-            <p className="muted">Combined risk score</p>
-            <p>{formatNumber(risk.combined_risk_score)}</p>
-          </div>
-          <div className="detail-field">
-            <p className="muted">Cost overrun probability</p>
-            <p>{formatNumber(risk.cost_overrun_probability, '%')}</p>
-          </div>
-          <div className="detail-field">
-            <p className="muted">Time overrun probability</p>
-            <p>{formatNumber(risk.time_overrun_probability, '%')}</p>
-          </div>
-          <div className="detail-field">
-            <p className="muted">Missing component</p>
-            <p>{risk.missing_component}</p>
-          </div>
-          <div className="detail-field">
-            <p className="muted">Warning type</p>
-            <p>{risk.warning_type}</p>
-          </div>
-          <div className="detail-field">
-            <p className="muted">Warning priority</p>
-            <p>
-              {risk.warning_priority} ({risk.warning_priority_label})
-            </p>
-          </div>
-          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
-            <p className="muted">Recommended action</p>
-            <p>{risk.recommended_action}</p>
-          </div>
-          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
-            <p className="muted">Risk indicators</p>
-            <p>{risk.risk_indicators}</p>
-          </div>
-          <div className="detail-field" style={{ gridColumn: '1 / -1' }}>
-            <p className="muted">Warning message</p>
-            <p className="muted" style={{ color: 'var(--high)' }}>
+        </div>
+
+        <RiskComparisonChart
+          costProbability={risk.cost_overrun_probability}
+          timeProbability={risk.time_overrun_probability}
+        />
+      </Section>
+
+      <Section title="Early warning details">
+        <div className="warning-panel">
+          <p>
+            <strong>Warning type:</strong> {risk.warning_type}
+          </p>
+          <p>
+            <strong>Priority:</strong> {risk.warning_priority} (
+            {risk.warning_priority_label})
+          </p>
+          <p>
+            <strong>Score status:</strong> {risk.score_status}
+          </p>
+          <p>
+            <strong>Missing component:</strong> {risk.missing_component}
+          </p>
+          <p>
+            <strong>Recommended action:</strong> {risk.recommended_action}
+          </p>
+          <p>
+            <strong>Risk indicators:</strong> {risk.risk_indicators}
+          </p>
+          <p>
+            <strong>Warning message:</strong>{' '}
+            <span className="muted" style={{ color: 'var(--high)' }}>
               {risk.warning_message}
-            </p>
-          </div>
+            </span>
+          </p>
         </div>
       </Section>
     </div>

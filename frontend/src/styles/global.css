@@ -598,13 +598,85 @@ select.select {
   color: var(--ink);
 }
 
+/* ---------- risk comparison chart (Phase 9.4) ---------- */
+.risk-chart-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.risk-chart-caption {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.risk-tooltip p {
+  margin: 0;
+}
+
+/* ---------- metric cards with numeric accents (Phase 9.4) ---------- */
+.metric-card--accent .metric-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-card--probability .metric-value {
+  color: var(--accent);
+}
+
+.metric-card--probability.tone-high .metric-value {
+  color: var(--high);
+}
+
+.metric-card--probability.tone-medium .metric-value {
+  color: var(--medium);
+}
+
+.metric-card--probability.tone-low .metric-value {
+  color: var(--low);
+}
+
+/* ---------- project detail page (Phase 9.4) ---------- */
+.risk-summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.warning-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  margin-top: 10px;
+}
+
+.warning-panel p {
+  margin: 0 0 6px;
+}
+
+.warning-panel p:last-child {
+  margin-bottom: 0;
+}
+
+.warning-panel strong {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
 @media (max-width: 960px) {
-  .detail-grid {
+  .risk-summary-row {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 @media (max-width: 720px) {
-  .detail-grid {
+  .risk-summary-row {
     grid-template-columns: 1fr;
   }
 }

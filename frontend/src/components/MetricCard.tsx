@@ -6,6 +6,7 @@ interface MetricCardProps {
   hint?: string;
   icon?: LucideIcon;
   tone?: 'default' | 'high' | 'medium' | 'low';
+  className?: string;
 }
 
 /**
@@ -17,9 +18,12 @@ export function MetricCard({
   hint,
   icon: Icon,
   tone = 'default',
+  className,
 }: MetricCardProps) {
   return (
-    <article className={`metric-card tone-${tone}`}>
+    <article
+      className={`metric-card tone-${tone}${className ? ` ${className}` : ''}`}
+    >
       <div className="metric-top">
         <span className="metric-label">{label}</span>
         {Icon && <Icon size={18} aria-hidden="true" />}
