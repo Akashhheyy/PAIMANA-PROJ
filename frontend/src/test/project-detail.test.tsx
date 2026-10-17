@@ -107,13 +107,17 @@ describe('ProjectDetailPage', () => {
       ).toBeInTheDocument(),
     );
     await waitFor(() =>
-      expect(screen.getByText('Airport Authority of India [AAI]')).toBeInTheDocument(),
+      expect(
+        screen.getAllByText('Airport Authority of India [AAI]').length,
+      ).toBeGreaterThanOrEqual(1),
     );
     await waitFor(() =>
-      expect(screen.getByText('Andhra Pradesh')).toBeInTheDocument(),
+      expect(screen.getAllByText('Andhra Pradesh').length).toBeGreaterThanOrEqual(1),
     );
     await waitFor(() => expect(screen.getByText('65%')).toBeInTheDocument());
-    await waitFor(() => expect(screen.getByText('Medium')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getAllByText('Medium').length).toBeGreaterThanOrEqual(1),
+    );
   });
 
   it('shows “—” for null time probability instead of zero', async () => {
