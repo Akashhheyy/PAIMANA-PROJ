@@ -3,7 +3,7 @@ import { Layout } from './components/Layout';
 import { OverviewPage } from './pages/OverviewPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { ProjectDetailPage } from './pages/ProjectDetailPage';
-import { ComingSoonPage } from './pages/ComingSoonPage';
+import { EarlyWarningsPage } from './pages/EarlyWarningsPage';
 
 export default function App() {
   return (
@@ -12,10 +12,7 @@ export default function App() {
         <Route path="/" element={<OverviewPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:projectCode" element={<ProjectDetailPage />} />
-        <Route
-          path="/early-warnings"
-          element={<ComingSoonPage title="Early Warnings" />}
-        />
+        <Route path="/early-warnings" element={<EarlyWarningsPage />} />
         <Route path="*" element={<OverviewPage />} />
       </Route>
     </Routes>
