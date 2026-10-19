@@ -1,5 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 vi.mock('../api/client', () => ({
@@ -70,6 +71,12 @@ const baseResponse: EarlyWarningListResponse = {
   warning_type: null,
 };
 
+// Multi-page response: 2 items but total=25 → 2 pages
+const multiPageResponse: EarlyWarningListResponse = {
+  ...baseResponse,
+  total: 25,
+};
+
 describe('EarlyWarningsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -116,6 +123,7 @@ describe('EarlyWarningsPage', () => {
 
   it('applies the risk_category filter via the backend contract', async () => {
     mockGetEarlyWarnings.mockResolvedValue(baseResponse);
+    const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/early-warnings']}>
         <Routes>
@@ -127,10 +135,10 @@ describe('EarlyWarningsPage', () => {
       expect(screen.getByText('Kadapa Airport Terminal')).toBeInTheDocument(),
     );
     const riskSelect = screen.getByLabelText('Risk category');
-    fireEvent.change(riskSelect, { target: { value: 'High' } });
+    await user.selectOptions(riskSelect, 'Medium');
     await waitFor(() =>
       expect(mockGetEarlyWarnings).toHaveBeenLastCalledWith({
-        risk_category: 'High',
+        risk_category: 'Medium',
         warning_type: undefined,
         page: 1,
         page_size: 20,
@@ -140,6 +148,7 @@ describe('EarlyWarningsPage', () => {
 
   it('applies the warning_type filter via the backend contract', async () => {
     mockGetEarlyWarnings.mockResolvedValue(baseResponse);
+    const user = userEvent.setup();
     render(
       <MemoryRouter initialEntries={['/early-warnings']}>
         <Routes>
@@ -151,9 +160,7 @@ describe('EarlyWarningsPage', () => {
       expect(screen.getByText('Kadapa Airport Terminal')).toBeInTheDocument(),
     );
     const typeSelect = screen.getByLabelText('Warning type');
-    fireEvent.change(typeSelect, {
-      target: { value: 'TIME_WARNING|MEDIUM_RISK_WARNING' },
-    });
+    await user.selectOptions(typeSelect, 'TIME_WARNING|MEDIUM_RISK_WARNING');
     await waitFor(() =>
       expect(mockGetEarlyWarnings).toHaveBeenLastCalledWith({
         risk_category: undefined,
@@ -165,7 +172,7 @@ describe('EarlyWarningsPage', () => {
   });
 
   it('paginates using the backend contract', async () => {
-    mockGetEarlyWarnings.mockResolvedValue(baseResponse);
+    mockGetEarlyWarnings.mockResolvedValue(multiPageResponse);
     render(
       <MemoryRouter initialEntries={['/early-warnings?page=1&page_size=20']}>
         <Routes>
@@ -173,7 +180,7 @@ describe('EarlyWarningsPage', () => {
         </Routes>
       </MemoryRouter>,
     );
-    await waitFor(() => screen.getByText('Page 1 of 1'));
+    await waitFor(() => screen.getByText('Page 1 of 2'));
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     await waitFor(() =>
       expect(mockGetEarlyWarnings).toHaveBeenLastCalledWith({
@@ -220,7 +227,7 @@ describe('EarlyWarningsPage', () => {
   });
 
   it('shows a retryable error state when the API fails', async () => {
-    mockGetEarlyWarnings.mockImplementation(() =>
+    mockGetEarlyWarnings.mockReturnValue(
       Promise.reject(new ApiError(0, 'Backend is unreachable.')),
     );
     render(
@@ -230,11 +237,8 @@ describe('EarlyWarningsPage', () => {
         </Routes>
       </MemoryRouter>,
     );
-    await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        'Backend is unreachable.',
-      ),
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Backend is unreachable.');
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 

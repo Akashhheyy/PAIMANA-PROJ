@@ -73,7 +73,7 @@ export function EarlyWarningsPage() {
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
   const pageSizeRaw = Number(searchParams.get('page_size'));
   const validPageSizes = new Set<number>(PAGE_SIZES);
-  const pageSize = validPageSizes.has(pageSizeRaw) ? PAGE_SIZES[0] : pageSizeRaw;
+  const pageSize = validPageSizes.has(pageSizeRaw) ? pageSizeRaw : PAGE_SIZES[0];
   const riskCategory = searchParams.get('risk_category') || undefined;
   const warningType = searchParams.get('warning_type') || undefined;
 
