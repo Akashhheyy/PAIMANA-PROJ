@@ -34,6 +34,22 @@ function formatNumber(value: number | null | undefined, suffix = ''): string {
   return `${value}${suffix}`;
 }
 
+/** Format a 0-1 probability fraction as a percentage with 2 decimal places. */
+function formatProbability(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return '—';
+  }
+  return `${(value * 100).toFixed(2)}%`;
+}
+
+/** Format a 0-1 risk score fraction to 3 decimal places. */
+function formatRiskScore(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return '—';
+  }
+  return value.toFixed(3);
+}
+
 interface DetailState {
   project: ProjectDetail | null;
   risk: ProjectRiskResponse | null;
@@ -219,31 +235,19 @@ export function ProjectDetailPage() {
         <div className="risk-summary-row">
           <MetricCard
             label="Cost overrun probability"
-            value={
-              risk.cost_overrun_probability == null
-                ? '—'
-                : `${risk.cost_overrun_probability}%`
-            }
+            value={formatProbability(risk.cost_overrun_probability)}
             tone="high"
             className="metric-card--probability"
           />
           <MetricCard
             label="Time overrun probability"
-            value={
-              risk.time_overrun_probability == null
-                ? '—'
-                : `${risk.time_overrun_probability}%`
-            }
+            value={formatProbability(risk.time_overrun_probability)}
             tone="medium"
             className="metric-card--probability"
           />
           <MetricCard
             label="Combined risk score"
-            value={
-              risk.combined_risk_score == null
-                ? '—'
-                : risk.combined_risk_score
-            }
+            value={formatRiskScore(risk.combined_risk_score)}
             tone={risk.risk_category as
               | 'high'
               | 'medium'
