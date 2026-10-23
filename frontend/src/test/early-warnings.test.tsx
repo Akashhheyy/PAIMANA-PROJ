@@ -80,6 +80,7 @@ const multiPageResponse: EarlyWarningListResponse = {
 describe('EarlyWarningsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockGetEarlyWarnings.mockRejectedValue(new ApiError(0, 'Backend is unreachable.'));
   });
 
   it('shows a loading state while fetching warnings', () => {
