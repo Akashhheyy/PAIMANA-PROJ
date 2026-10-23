@@ -237,8 +237,11 @@ describe('EarlyWarningsPage', () => {
         </Routes>
       </MemoryRouter>,
     );
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Backend is unreachable.');
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Backend is unreachable.',
+      ),
+    );
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
