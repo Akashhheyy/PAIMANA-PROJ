@@ -227,8 +227,8 @@ describe('EarlyWarningsPage', () => {
   });
 
   it('shows a retryable error state when the API fails', async () => {
-    mockGetEarlyWarnings.mockReturnValue(
-      Promise.reject(new ApiError(0, 'Backend is unreachable.')),
+    mockGetEarlyWarnings.mockRejectedValue(
+      new ApiError(0, 'Backend is unreachable.'),
     );
     render(
       <MemoryRouter initialEntries={['/early-warnings']}>
